@@ -112,6 +112,10 @@ struct client_state {
     struct xkb_state *xkb_state;
     struct xkb_context *xkb_context;
     struct xkb_keymap *xkb_keymap;
+
+    char characters[256];
+
+
 };
 
 static void
@@ -153,7 +157,9 @@ draw_frame(struct client_state *state)
     close(fd);
 
 
-    char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
+    //char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
+    
+    char* text = state->characters;
     int textLength = 10;
 
     FT_Library library;
@@ -174,75 +180,27 @@ draw_frame(struct client_state *state)
         {
             for (int x = 0; x < face->glyph->bitmap.width; ++x) {
 
-                if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 1)
+                if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
                 {
                     data[y*width+x+offset] = 0xFFFFFFFF;
                 }
                 else
                 {
-                    // data[y*width+x] = 0xFFEEEEEE;
                     data[y*width+x+offset] = 0xFF000000;
                 }
-
             }
         }
         offset += face->glyph->bitmap.width;
     }
 
    // Cleanup
-   FT_Done_Face(face);
-   FT_Done_FreeType(library);
-
-
-
-
-
-
-    //get_bitmap_bit('D')
-    // for (int y = 0; y < height; ++y) {
-    //     for (int x = 0; x < width; ++x) {
-    //         if(get_bitmap_bit('D',x,y))
-    //         {
-    //         //    data[y*width+x] = 0xFF666666;
-    //         }
-    //         else
-    //         {
-    //             data[y*width+x] = 0xFFEEEEEE;
-    //         }
-    //     }
-    // }
-
-    /* Draw checkerboxed background */
-    // int offset = (int)state->offset % 8;
-    // for (int y = 0; y < height; ++y) {
-    //     for (int x = 0; x < width; ++x) {
-    //         if (((x + offset) + (y + offset) / 8 * 8) % 16 < 8)
-    //             data[y * width + x] = 0xFF666666;
-    //         else
-    //             data[y * width + x] = 0xFFEEEEEE;
-    //     }
-    // }
-
-    //data[0]  = 0xFFFF0000;
-    //data[1]  = 0xFFFF0000;  
-    //data[2]  = 0xFFFF0000; 
-    //data[3]  = 0xFFFF0000; 
-    //data[4]  = 0xFFFF0000; 
-    //data[5]  = 0xFFFF0000; 
-    //data[6]  = 0xFFFF0000; 
-    //data[7]  = 0xFFFF0000; 
-    //data[8]  = 0xFFFF0000;
-    //data[9]  = 0xFFFF0000;  
-    //data[10] = 0xFFFF0000; 
-    //data[11] = 0xFFFF0000; 
-    //data[12] = 0xFFFF0000; 
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
     data[56] = 0xFFFF0000; 
     data[65] = 0xFFFF0000; 
     data[74] = 0xFFFF0000; 
     data[83] = 0xFFFF0000;
     data[92] = 0xFFFF0000;  
-
-
 
 
     munmap(data, size);
@@ -523,6 +481,16 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
        fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
        xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                        buf, sizeof(buf));
+
+       if(client_state->characters[0] == 'e')
+       {
+         client_state->characters[0] = 'd';
+       }
+       else
+       {
+         client_state->characters[0] = 'e';
+       }
+       
        fprintf(stderr, "utf8: '%s'\n", buf);
 }
 
@@ -696,6 +664,7 @@ main(int argc, char *argv[])
     struct client_state state = { 0 };
     state.width = 640;
     state.height = 480;
+    strcpy(state.characters, "DeadInside");
     
 //     state.width = 1000;
 //     state.height = 1000;
