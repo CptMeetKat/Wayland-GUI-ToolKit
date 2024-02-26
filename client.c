@@ -114,6 +114,7 @@ struct client_state {
     struct xkb_keymap *xkb_keymap;
 
     char characters[256];
+    int length;
 
 
 };
@@ -160,7 +161,7 @@ draw_frame(struct client_state *state)
     //char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
     
     char* text = state->characters;
-    int textLength = 10;
+    int textLength = state->length;
 
     FT_Library library;
     FT_Face face;
@@ -464,6 +465,26 @@ static const struct wl_pointer_listener wl_pointer_listener = {
        .axis_discrete = wl_pointer_axis_discrete,
 };
 
+int appendChar(char* destination, int length, char c)
+{
+   destination[length] = c;
+   destination[length+1] = '\0';
+   printf("%s\n", destination);
+
+   return length+1;
+}
+
+
+int removeChar(char* destination, int length)
+{
+   if(length > 0)
+   {
+      destination[length] = '\0';
+      return length-1;
+   }
+
+   return length;
+}
 
 
 static void
@@ -482,13 +503,13 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
        xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                        buf, sizeof(buf));
 
-       if(client_state->characters[0] == 'e')
+       if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
        {
-         client_state->characters[0] = 'd';
+         client_state->length = appendChar(client_state->characters, client_state->length, sym);
        }
-       else
+       else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
        {
-         client_state->characters[0] = 'e';
+         client_state->length = removeChar(client_state->characters, client_state->length);
        }
        
        fprintf(stderr, "utf8: '%s'\n", buf);
@@ -665,6 +686,9 @@ main(int argc, char *argv[])
     state.width = 640;
     state.height = 480;
     strcpy(state.characters, "DeadInside");
+    state.length = strlen(state.characters);
+
+    // strcpy(state.characters, "___________");
     
 //     state.width = 1000;
 //     state.height = 1000;
