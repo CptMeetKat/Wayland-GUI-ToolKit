@@ -153,7 +153,8 @@ draw_frame(struct client_state *state)
     close(fd);
 
 
-    //char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
+    char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
+    int textLength = 10;
 
     FT_Library library;
     FT_Face face;
@@ -161,25 +162,31 @@ draw_frame(struct client_state *state)
     FT_New_Face(library, "DejaVuSansMono.ttf", 0, &face);
     // FT_Set_Char_Size(face, 0, 16 * 64, 50, 50);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
-    FT_Load_Char(face, 'D', FT_LOAD_RENDER);
-    FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
 
+    int offset = 0;
 
-    for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+    for (int i = 0; i < textLength; i++)
     {
-        for (int x = 0; x < face->glyph->bitmap.width; ++x) {
+        FT_Load_Char(face, text[i], FT_LOAD_RENDER);
+        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
+    
+        for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+        {
+            for (int x = 0; x < face->glyph->bitmap.width; ++x) {
 
-            if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 1)
-            {
-                data[y*width+x] = 0xFFFFFFFF;
-            }
-            else
-            {
-                // data[y*width+x] = 0xFFEEEEEE;
-                data[y*width+x] = 0xFF000000;
-            }
+                if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 1)
+                {
+                    data[y*width+x+offset] = 0xFFFFFFFF;
+                }
+                else
+                {
+                    // data[y*width+x] = 0xFFEEEEEE;
+                    data[y*width+x+offset] = 0xFF000000;
+                }
 
+            }
         }
+        offset += face->glyph->bitmap.width;
     }
 
    // Cleanup
