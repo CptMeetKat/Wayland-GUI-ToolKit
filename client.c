@@ -170,28 +170,37 @@ draw_frame(struct client_state *state)
     // FT_Set_Char_Size(face, 0, 16 * 64, 50, 50);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
 
-    int offset = 0;
+    int xOffset = 0;
+    int yOffset = 0;
 
+    const int MAX_LINE_CHARS = 30;
+    const int LINE_SPACEING = 10;
     for (int i = 0; i < textLength; i++)
     {
         FT_Load_Char(face, text[i], FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
-    
+        if(i % MAX_LINE_CHARS == 0 && i > 0)
+        {
+            // yOffset += 100;
+            yOffset += face->glyph->bitmap.rows + LINE_SPACEING;
+            xOffset = 0;
+        }
+
         for (int y = 0; y < face->glyph->bitmap.rows; ++y)
         {
             for (int x = 0; x < face->glyph->bitmap.width; ++x) {
 
                 if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
                 {
-                    data[y*width+x+offset] = 0xFFFFFFFF;
+                    data[((y+yOffset)*width)+x+xOffset] = 0xFFFFFFFF;
                 }
                 else
                 {
-                    data[y*width+x+offset] = 0xFF000000;
+                    data[((y+yOffset)*width)+x+xOffset] = 0xFF000000;
                 }
             }
         }
-        offset += face->glyph->bitmap.width;
+        xOffset += face->glyph->bitmap.width;
     }
 
    // Cleanup
@@ -201,8 +210,8 @@ draw_frame(struct client_state *state)
     data[65] = 0xFFFF0000; 
     data[74] = 0xFFFF0000; 
     data[83] = 0xFFFF0000;
-    data[92] = 0xFFFF0000;  
-
+    data[92] = 0xFFFF0000;
+    data[5096*10] = 0xFFFF0000;
 
     munmap(data, size);
     wl_buffer_add_listener(buffer, &wl_buffer_listener, NULL);
