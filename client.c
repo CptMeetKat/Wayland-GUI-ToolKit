@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "xdg-shell-client-protocol.h"
 #include <xkbcommon/xkbcommon.h>
-#include "bitmap.h"
+//#include "bitmap.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
