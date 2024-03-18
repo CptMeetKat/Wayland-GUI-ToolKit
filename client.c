@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-//#include <limits.h>
 #include <stdbool.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -12,7 +11,6 @@
 #include <stdio.h>
 #include "xdg-shell-client-protocol.h"
 #include <xkbcommon/xkbcommon.h>
-//#include "bitmap.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "gui-toolkit.c"
@@ -117,15 +115,12 @@ struct client_state {
     char characters[256];
     int length;
 
-
     //components
     struct Widget *components[32];
     int total_components;
 
     struct Widget* focused;
     int focused_index;
-
-
 };
 
 
@@ -167,7 +162,6 @@ static void draw_text(struct client_state *state, uint32_t *data, int width)
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
         if(i % MAX_LINE_CHARS == 0 && i > 0)
         {
-            // yOffset += 100;
             yOffset += face->glyph->bitmap.rows + LINE_SPACEING;
             xOffset = 0;
         }
@@ -259,9 +253,7 @@ draw_frame(struct client_state *state)
     close(fd);
 
 
-//NOTE: Events are currently not raised to this textfield like the previous version
-    //render components 
-    //renderComponents() here:
+    //make renderComponents() here:
 
     for(int i = 0; i < state->total_components; i++)
     {
@@ -558,27 +550,11 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 
 
     int sym_code = (int)sym;
-    printf("%d\n___", sym_code);
-    if(sym == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-    {
-        printf("HELLO");
+    if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
         cycleFocused(client_state);
-    }
     else if(client_state->focused != NULL)
-    {
         client_state->focused->key_press(client_state->focused, state, (int)sym);
-    }
 
-//    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-//    {
-//        //We are not writing to the correct characters
-//        client_state->length = appendChar(client_state->characters, client_state->length, sym);
-//    }
-//    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-//    {
-//        //We are not removing from the right characters
-//        client_state->length = removeChar(client_state->characters, client_state->length);
-//    }
 
     fprintf(stderr, "utf8: '%s'\n", buf);
 }
@@ -731,8 +707,6 @@ registry_global(void *data, struct wl_registry *wl_registry,
 }
 
 
-
-
 static void
 registry_global_remove(void *data,
         struct wl_registry *wl_registry, uint32_t name)
@@ -794,9 +768,6 @@ int main(int argc, char *argv[])
     while (wl_display_dispatch(state.wl_display)) {
         /* This space deliberately left blank */
     }
-
-   //FT_Done_Face(face);
-   //FT_Done_FreeType(library);
 
     return 0;
 }
