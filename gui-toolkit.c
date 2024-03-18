@@ -8,8 +8,8 @@ struct Widget;
 struct TextField;
 
 static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int, int);
-static void key_press(struct Widget*, uint32_t state, char);
-static void key_press_textfield(struct TextField*, uint32_t state, char);
+static void key_press(struct Widget*, uint32_t state, int);
+static void key_press_textfield(struct TextField*, uint32_t state, int);
 
 enum ComponentType {
     TEXTBOX,
@@ -25,7 +25,7 @@ struct Widget {
     int width;
     int order; 
     void (*draw)(struct Widget*, uint32_t*, int, int, int);
-    void (*key_press)(struct Widget*, uint32_t state, char);
+    void (*key_press)(struct Widget*, uint32_t state, int);
     enum ComponentType type;
     void *child;
 };
@@ -38,7 +38,7 @@ struct TextField
     char text[128]; //Eventually will cause run time error
     int text_length;
 
-    void (*key_press)(struct TextField*, uint32_t state, char);
+    void (*key_press)(struct TextField*, uint32_t state, int);
 };
 
 static void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
@@ -55,7 +55,6 @@ static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, in
 {
     struct TextField* t = (struct TextField*)widget->child;
     
-    
     int width = w_width;
     int height = w_height;
 
@@ -68,8 +67,8 @@ static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, in
     FT_New_Face(library, "DejaVuSansMono.ttf", 0, &face);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
 
-    int xOffset = 0;
-    int yOffset = 0;
+    int xOffset = 0 + widget->x;
+    int yOffset = 0 + widget->y;
 
     const int MAX_LINE_CHARS = 30;
     const int LINE_SPACEING = 10;
@@ -101,7 +100,7 @@ static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, in
     FT_Done_FreeType(library);
 }
 
-static struct TextField* create_test_textfield() {
+static struct TextField* create_test_textfield(int x, int y) {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
@@ -120,8 +119,8 @@ static struct TextField* create_test_textfield() {
     // Initialize the Widget
     textField->base->type = TEXTBOX;
     textField->base->child = textField;  
-    textField->base->x = 10;
-    textField->base->y = 20;
+    textField->base->x = x;
+    textField->base->y = y;
     textField->base->height = 100;
     textField->base->width = 200;
     textField->base->order = 0;
@@ -130,17 +129,15 @@ static struct TextField* create_test_textfield() {
     textField->key_press = key_press_textfield;
     textField->base->key_press = key_press;
 
-    // Initialize TextField properties
- //   textField->text = (char*)malloc(32 * sizeof(char));
     strcpy(textField->text, "Hello"); //Change to static memory l8r
 
-    textField->text_length = 6;
+    textField->text_length = 5; //Question this a bit cause im tired
 
     return textField;
 }
 
 
-static void key_press(struct Widget* widget, uint32_t state, char sym)
+static void key_press(struct Widget* widget, uint32_t state, int sym)
 {
     if(widget->type == TEXTBOX)
     {
@@ -162,26 +159,15 @@ static void removeChar(struct TextField* textfield)
 {
     if(textfield->text_length > 0)
     {
-        textfield->text[textfield->text_length] = '\0';
-        textfield->text_length = textfield->text_length -1;
+        textfield->text[textfield->text_length-1] = '\0';
+        textfield->text_length = textfield->text_length - 1;
     }
 }
 
-static void key_press_textfield(struct TextField* textfield, uint32_t state, char sym)
+static void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
-
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-    {
-
         appendChar(textfield, sym);
-    }
     else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-    {
-        //We are not removing from the right characters
-        //removeChar:W
        removeChar(textfield);
-
- //       client_state->length = removeChar(client_state->characters, client_state->length);
-    }
-
 }

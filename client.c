@@ -571,7 +571,7 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 
     if(client_state->focused != NULL)
     {
-        client_state->focused->key_press(client_state->focused, state, sym);
+        client_state->focused->key_press(client_state->focused, state, (int)sym);
     }
 
 //    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
@@ -768,8 +768,11 @@ int main(int argc, char *argv[])
     strcpy(state.characters, "DeadInside");
     state.length = strlen(state.characters);
 
-    registerComponent(&state, create_test_textfield()->base);
+    registerComponent(&state, create_test_textfield(10, 20)->base);
+    registerComponent(&state, create_test_textfield(100, 300)->base);
+
     state.focused = NULL;
+
     state.focused = state.components[0]; //TEST ONLY/ focus on the first component registered
 
     state.wl_display = wl_display_connect(NULL);
