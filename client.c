@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
+//#include <limits.h>
 #include <stdbool.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -15,6 +15,7 @@
 //#include "bitmap.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "gui-toolkit.c"
 
 enum pointer_event_mask {
        POINTER_EVENT_ENTER = 1 << 0,
@@ -117,7 +118,14 @@ struct client_state {
     int length;
 
 
+    //components
+    struct Widget *components[32];
+    int total_components;
+
+
 };
+
+
 
 static void
 wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
@@ -130,36 +138,11 @@ static const struct wl_buffer_listener wl_buffer_listener = {
     .release = wl_buffer_release,
 };
 
-static struct wl_buffer *
-draw_frame(struct client_state *state)
+
+
+static void draw_text(struct client_state *state, uint32_t *data, int width)
 {
-    int width = state->width;
-    int height = state->height;
-    int stride = width * 4;
-    int size = stride * height;
-    
 
-    int fd = allocate_shm_file(size);
-    if (fd == -1) {
-        return NULL;
-    }
-
-    uint32_t *data = mmap(NULL, size,
-            PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (data == MAP_FAILED) {
-        close(fd);
-        return NULL;
-    }
-
-    struct wl_shm_pool *pool = wl_shm_create_pool(state->wl_shm, fd, size);
-    struct wl_buffer *buffer = wl_shm_pool_create_buffer(pool, 0,
-            width, height, stride, WL_SHM_FORMAT_XRGB8888);
-    wl_shm_pool_destroy(pool);
-    close(fd);
-
-
-    //char text[] = {'D','e','a','d','I','n','s','i','d','e','\0'};
-    
     char* text = state->characters;
     int textLength = state->length;
 
@@ -206,17 +189,96 @@ draw_frame(struct client_state *state)
    // Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
-    data[56] = 0xFFFF0000; 
-    data[65] = 0xFFFF0000; 
-    data[74] = 0xFFFF0000; 
-    data[83] = 0xFFFF0000;
-    data[92] = 0xFFFF0000;
-    data[5096*10] = 0xFFFF0000;
+}
+
+
+static void draw_redSquare(uint32_t *data, int stride)
+{
+    int hSteps = 30;
+    int vSteps = 30;
+    int cursor = 0;
+
+    for(int i = 0; i < vSteps; i++)
+    {
+        cursor = 85000 + ((stride/4)*i);
+        data[cursor] = 0xFFFF0000;
+    }
+
+
+    for(int i = 0; i < hSteps; i++)
+    {
+        cursor = cursor+1;
+        data[cursor] = 0xFFFF0000;
+    }
+
+    int cursorH = cursor;
+    for(int i = 0; i < vSteps; i++)
+    {
+        cursor = cursorH - ((stride/4)*i);
+        data[cursor] = 0xFFFF0000;
+    }
+
+    
+    for(int i = 0; i < hSteps; i++)
+    {
+        cursor = cursor-1;
+        data[cursor] = 0xFFFF0000;
+    }
+}
+
+
+
+static struct wl_buffer *
+draw_frame(struct client_state *state)
+{
+    int width = state->width;
+    int height = state->height;
+    int stride = width * 4;
+    int size = stride * height;
+    
+
+    int fd = allocate_shm_file(size);
+    if (fd == -1) {
+        return NULL;
+    }
+
+    uint32_t *data = mmap(NULL, size,
+            PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (data == MAP_FAILED) {
+        close(fd);
+        return NULL;
+    }
+
+    struct wl_shm_pool *pool = wl_shm_create_pool(state->wl_shm, fd, size);
+    struct wl_buffer *buffer = wl_shm_pool_create_buffer(pool, 0,
+            width, height, stride, WL_SHM_FORMAT_XRGB8888);
+    wl_shm_pool_destroy(pool);
+    close(fd);
+
+
+//    draw_text(state, data, width);
+//    draw_redSquare(data, stride);
+//    struct TextField *txt = create_textfield();
+//NOTE: Events are currently not raised to this textfield like the previous version
+    //
+    //render components 
+
+    for(int i = 0; i < state->total_components; i++)
+    {
+        //client_state.components[i]->draw(txt, data, stride);
+        struct Widget* c = state->components[i];
+        c->draw(c, data, stride, width, height); //probably pacakge data and stride together in their own struct
+//        printf("TESTING HERE");
+
+ //       txt->base->draw(txt, data, stride, width, height);
+//        draw_textfield(txt, data, stride, width,height);
+    }
 
     munmap(data, size);
     wl_buffer_add_listener(buffer, &wl_buffer_listener, NULL);
     return buffer;
 }
+
 
 static void
 xdg_toplevel_configure(void *data,
@@ -514,10 +576,12 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 
        if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
        {
+        //We are not writing to the correct characters
          client_state->length = appendChar(client_state->characters, client_state->length, sym);
        }
        else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
        {
+        //We are not removing from the right characters
          client_state->length = removeChar(client_state->characters, client_state->length);
        }
        
@@ -696,6 +760,10 @@ main(int argc, char *argv[])
     state.height = 480;
     strcpy(state.characters, "DeadInside");
     state.length = strlen(state.characters);
+
+    struct TextField *txt = create_textfield();
+    state.components[0] = txt->base; 
+    state.total_components = 1;
 
     // strcpy(state.characters, "___________");
     
