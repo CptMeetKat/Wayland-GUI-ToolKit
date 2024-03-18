@@ -37,13 +37,15 @@ struct TextField
     int text_length;
 
     void (*key_press)(struct TextField*, uint32_t state, int);
+    void (*draw)(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height);
 };
 
 static void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
     if(widget->type == TEXTBOX)
     {
-        draw_textfield(widget, data, stride, w_width, w_height); //May as well just call w->child->draw();
+        struct TextField* t = (struct TextField*) widget->child; 
+        t->draw(widget, data, stride, w_width, w_height);
     }
     //else if ( OTHER COMPONENT )
 }
@@ -126,6 +128,8 @@ static struct TextField* create_test_textfield(int x, int y) {
 
     textField->key_press = key_press_textfield;
     textField->base->key_press = key_press;
+
+    textField->draw = draw_textfield;
 
     strcpy(textField->text, "Hello"); //Change to static memory l8r
 
