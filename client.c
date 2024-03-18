@@ -256,22 +256,14 @@ draw_frame(struct client_state *state)
     close(fd);
 
 
-//    draw_text(state, data, width);
-//    draw_redSquare(data, stride);
-//    struct TextField *txt = create_textfield();
 //NOTE: Events are currently not raised to this textfield like the previous version
-    //
     //render components 
+    //renderComponents() here:
 
     for(int i = 0; i < state->total_components; i++)
     {
-        //client_state.components[i]->draw(txt, data, stride);
         struct Widget* c = state->components[i];
         c->draw(c, data, stride, width, height); //probably pacakge data and stride together in their own struct
-//        printf("TESTING HERE");
-
- //       txt->base->draw(txt, data, stride, width, height);
-//        draw_textfield(txt, data, stride, width,height);
     }
 
     munmap(data, size);
@@ -750,8 +742,15 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = registry_global_remove,
 };
 
-int
-main(int argc, char *argv[])
+static void registerComponent(struct client_state *state, struct Widget* w)
+{
+
+    state->components[state->total_components] = w;
+    state->total_components = state->total_components + 1;   
+    //Unsafe to many components
+}
+
+int main(int argc, char *argv[])
 {
     //init_bitmap();
     
@@ -761,14 +760,8 @@ main(int argc, char *argv[])
     strcpy(state.characters, "DeadInside");
     state.length = strlen(state.characters);
 
-    struct TextField *txt = create_textfield();
-    state.components[0] = txt->base; 
-    state.total_components = 1;
+    registerComponent(&state, create_test_textfield()->base);
 
-    // strcpy(state.characters, "___________");
-    
-//     state.width = 1000;
-//     state.height = 1000;
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
     state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);

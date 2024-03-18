@@ -4,8 +4,6 @@
 
 
 
-
-
 struct Widget;
 static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int, int);
 
@@ -96,7 +94,7 @@ static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, in
     FT_Done_FreeType(library);
 }
 
-static struct TextField* create_textfield() {
+static struct TextField* create_test_textfield() {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
