@@ -2,10 +2,14 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-
+#include "xdg-shell-client-protocol.h" //these are only included for an enum
 
 struct Widget;
+struct TextField;
+
 static void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int, int);
+static void key_press(struct Widget*, uint32_t state, char);
+static void key_press_textfield(struct TextField*, uint32_t state, char);
 
 enum ComponentType {
     TEXTBOX,
@@ -21,6 +25,7 @@ struct Widget {
     int width;
     int order; 
     void (*draw)(struct Widget*, uint32_t*, int, int, int);
+    void (*key_press)(struct Widget*, uint32_t state, char);
     enum ComponentType type;
     void *child;
 };
@@ -32,13 +37,15 @@ struct TextField
 //    char* text;
     char text[128]; //Eventually will cause run time error
     int text_length;
+
+    void (*key_press)(struct TextField*, uint32_t state, char);
 };
 
 static void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
     if(widget->type == TEXTBOX)
     {
-        draw_textfield(widget, data, stride, w_width, w_height);
+        draw_textfield(widget, data, stride, w_width, w_height); //May as well just call w->child->draw();
     }
     //else if ( OTHER COMPONENT )
 }
@@ -120,6 +127,9 @@ static struct TextField* create_test_textfield() {
     textField->base->order = 0;
     textField->base->draw = draw;
 
+    textField->key_press = key_press_textfield;
+    textField->base->key_press = key_press;
+
     // Initialize TextField properties
  //   textField->text = (char*)malloc(32 * sizeof(char));
     strcpy(textField->text, "Hello"); //Change to static memory l8r
@@ -127,4 +137,51 @@ static struct TextField* create_test_textfield() {
     textField->text_length = 6;
 
     return textField;
+}
+
+
+static void key_press(struct Widget* widget, uint32_t state, char sym)
+{
+    if(widget->type == TEXTBOX)
+    {
+        struct TextField* t = (struct TextField*)widget->child;
+        t->key_press(t,state,sym);
+    }
+}
+
+
+static void appendChar(struct TextField* textfield, char c)
+{
+    textfield->text[textfield->text_length] = c;
+    textfield->text[textfield->text_length+1] = '\0';
+    textfield->text_length = textfield->text_length+1; 
+}
+
+
+static void removeChar(struct TextField* textfield)
+{
+    if(textfield->text_length > 0)
+    {
+        textfield->text[textfield->text_length] = '\0';
+        textfield->text_length = textfield->text_length -1;
+    }
+}
+
+static void key_press_textfield(struct TextField* textfield, uint32_t state, char sym)
+{
+
+    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    {
+
+        appendChar(textfield, sym);
+    }
+    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    {
+        //We are not removing from the right characters
+        //removeChar:W
+       removeChar(textfield);
+
+ //       client_state->length = removeChar(client_state->characters, client_state->length);
+    }
+
 }

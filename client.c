@@ -122,6 +122,8 @@ struct client_state {
     struct Widget *components[32];
     int total_components;
 
+    struct Widget* focused;
+
 
 };
 
@@ -528,56 +530,62 @@ static const struct wl_pointer_listener wl_pointer_listener = {
        .axis_discrete = wl_pointer_axis_discrete,
 };
 
-int appendChar(char* destination, int length, char c)
-{
-   destination[length] = c;
-   destination[length+1] = '\0';
-   printf("%s\n", destination);
-
-   return length+1;
-}
-
-
-int removeChar(char* destination, int length)
-{
-   if(length > 0)
-   {
-      destination[length] = '\0';
-      return length-1;
-   }
-
-   return length;
-}
+//int appendChar(char* destination, int length, char c)
+//{
+//   destination[length] = c;
+//   destination[length+1] = '\0';
+//   printf("%s\n", destination);
+//
+//   return length+1;
+//}
+//
+//
+//int removeChar(char* destination, int length)
+//{
+//   if(length > 0)
+//   {
+//      destination[length] = '\0';
+//      return length-1;
+//   }
+//
+//   return length;
+//}
 
 
 static void
 wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
                uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
-       struct client_state *client_state = data;
-       char buf[128];
-       uint32_t keycode = key + 8;
-       xkb_keysym_t sym = xkb_state_key_get_one_sym(
-                       client_state->xkb_state, keycode);
-       xkb_keysym_get_name(sym, buf, sizeof(buf));
-       const char *action =
-               state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
-       fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
-       xkb_state_key_get_utf8(client_state->xkb_state, keycode,
-                       buf, sizeof(buf));
+    struct client_state *client_state = data;
+    char buf[128];
+    uint32_t keycode = key + 8;
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(
+        client_state->xkb_state, keycode);
+    xkb_keysym_get_name(sym, buf, sizeof(buf));
+    const char *action =
+        state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
+    fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
+    xkb_state_key_get_utf8(client_state->xkb_state, keycode,
+                           buf, sizeof(buf));
 
-       if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-       {
-        //We are not writing to the correct characters
-         client_state->length = appendChar(client_state->characters, client_state->length, sym);
-       }
-       else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-       {
-        //We are not removing from the right characters
-         client_state->length = removeChar(client_state->characters, client_state->length);
-       }
-       
-       fprintf(stderr, "utf8: '%s'\n", buf);
+
+    if(client_state->focused != NULL)
+    {
+        client_state->focused->key_press(client_state->focused, state, sym);
+    }
+
+//    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+//    {
+//        //We are not writing to the correct characters
+//        client_state->length = appendChar(client_state->characters, client_state->length, sym);
+//    }
+//    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+//    {
+//        //We are not removing from the right characters
+//        client_state->length = removeChar(client_state->characters, client_state->length);
+//    }
+
+    fprintf(stderr, "utf8: '%s'\n", buf);
 }
 
 static void
@@ -761,6 +769,8 @@ int main(int argc, char *argv[])
     state.length = strlen(state.characters);
 
     registerComponent(&state, create_test_textfield()->base);
+    state.focused = NULL;
+    state.focused = state.components[0]; //TEST ONLY/ focus on the first component registered
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
