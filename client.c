@@ -112,9 +112,6 @@ struct client_state {
     struct xkb_context *xkb_context;
     struct xkb_keymap *xkb_keymap;
 
-    char characters[256];
-    int length;
-
     //components
     struct Widget *components[32];
     int total_components;
@@ -135,58 +132,6 @@ wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
 static const struct wl_buffer_listener wl_buffer_listener = {
     .release = wl_buffer_release,
 };
-
-
-
-static void draw_text(struct client_state *state, uint32_t *data, int width)
-{
-
-    char* text = state->characters;
-    int textLength = state->length;
-
-    FT_Library library;
-    FT_Face face;
-    FT_Init_FreeType(&library);
-    FT_New_Face(library, "DejaVuSansMono.ttf", 0, &face);
-    // FT_Set_Char_Size(face, 0, 16 * 64, 50, 50);
-    FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
-
-    int xOffset = 0;
-    int yOffset = 0;
-
-    const int MAX_LINE_CHARS = 30;
-    const int LINE_SPACEING = 10;
-    for (int i = 0; i < textLength; i++)
-    {
-        FT_Load_Char(face, text[i], FT_LOAD_RENDER);
-        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
-        if(i % MAX_LINE_CHARS == 0 && i > 0)
-        {
-            yOffset += face->glyph->bitmap.rows + LINE_SPACEING;
-            xOffset = 0;
-        }
-
-        for (int y = 0; y < face->glyph->bitmap.rows; ++y)
-        {
-            for (int x = 0; x < face->glyph->bitmap.width; ++x) {
-
-                if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
-                {
-                    data[((y+yOffset)*width)+x+xOffset] = 0xFFFFFFFF;
-                }
-                else
-                {
-                    data[((y+yOffset)*width)+x+xOffset] = 0xFF000000;
-                }
-            }
-        }
-        xOffset += face->glyph->bitmap.width;
-    }
-
-   // Cleanup
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
-}
 
 
 static void draw_redSquare(uint32_t *data, int stride)
@@ -738,8 +683,6 @@ int main(int argc, char *argv[])
     struct client_state state = { 0 };
     state.width = 640;
     state.height = 480;
-    strcpy(state.characters, "DeadInside");
-    state.length = strlen(state.characters);
 
     state.focused = NULL;
     registerComponent(&state, create_test_textfield(10, 20)->base);
