@@ -123,6 +123,7 @@ struct client_state {
     int total_components;
 
     struct Widget* focused;
+    int focused_index;
 
 
 };
@@ -530,26 +531,13 @@ static const struct wl_pointer_listener wl_pointer_listener = {
        .axis_discrete = wl_pointer_axis_discrete,
 };
 
-//int appendChar(char* destination, int length, char c)
-//{
-//   destination[length] = c;
-//   destination[length+1] = '\0';
-//   printf("%s\n", destination);
-//
-//   return length+1;
-//}
-//
-//
-//int removeChar(char* destination, int length)
-//{
-//   if(length > 0)
-//   {
-//      destination[length] = '\0';
-//      return length-1;
-//   }
-//
-//   return length;
-//}
+static void cycleFocused(struct client_state *state)
+{
+    state->focused_index +=1;
+    if(state->total_components <= state->focused_index)
+        state->focused_index = 0;
+    state->focused = state->components[state->focused_index];
+}
 
 
 static void
@@ -569,7 +557,14 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
                            buf, sizeof(buf));
 
 
-    if(client_state->focused != NULL)
+    int sym_code = (int)sym;
+    printf("%d\n___", sym_code);
+    if(sym == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    {
+        printf("HELLO");
+        cycleFocused(client_state);
+    }
+    else if(client_state->focused != NULL)
     {
         client_state->focused->key_press(client_state->focused, state, (int)sym);
     }
@@ -774,6 +769,7 @@ int main(int argc, char *argv[])
     state.focused = NULL;
 
     state.focused = state.components[0]; //TEST ONLY/ focus on the first component registered
+    state.focused_index = 0;
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
