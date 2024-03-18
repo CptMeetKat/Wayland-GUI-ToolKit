@@ -747,29 +747,30 @@ static const struct wl_registry_listener wl_registry_listener = {
 
 static void registerComponent(struct client_state *state, struct Widget* w)
 {
-
     state->components[state->total_components] = w;
+    
+    if(state->total_components == 0)
+    {
+        state->focused = state->components[state->focused_index];
+        state->focused_index = 0;
+    }
+
     state->total_components = state->total_components + 1;   
-    //Unsafe to many components
+    //Unsafe if to many components, due to no resizeing definition
 }
 
 int main(int argc, char *argv[])
 {
-    //init_bitmap();
-    
     struct client_state state = { 0 };
     state.width = 640;
     state.height = 480;
     strcpy(state.characters, "DeadInside");
     state.length = strlen(state.characters);
 
+    state.focused = NULL;
     registerComponent(&state, create_test_textfield(10, 20)->base);
     registerComponent(&state, create_test_textfield(100, 300)->base);
 
-    state.focused = NULL;
-
-    state.focused = state.components[0]; //TEST ONLY/ focus on the first component registered
-    state.focused_index = 0;
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
