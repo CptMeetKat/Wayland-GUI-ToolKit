@@ -92,7 +92,10 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     FT_Done_Face(face);
     FT_Done_FreeType(library);
     
-    addBorder(widget,data,stride,w_width,w_height);
+    if(widget->isFocused)
+    {
+        addBorder(widget,data,stride,w_width,w_height);
+    }
 }
 
 
@@ -153,7 +156,7 @@ struct TextField* create_test_textfield(int x, int y) {
     textField->base->key_press = key_press;
 
     textField->draw = draw_textfield;
-
+    textField->base->isFocused = 0;
     strcpy(textField->text, "Hello"); //Change to static memory l8r
 
     textField->text_length = 5; //Question this a bit cause im tired

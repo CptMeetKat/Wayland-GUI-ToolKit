@@ -471,10 +471,12 @@ static const struct wl_pointer_listener wl_pointer_listener = {
 
 static void cycleFocused(struct client_state *state)
 {
+    state->focused->isFocused = 0;
     state->focused_index +=1;
     if(state->total_components <= state->focused_index)
         state->focused_index = 0;
     state->focused = state->components[state->focused_index];
+    state->focused->isFocused = 1;
 }
 
 
@@ -672,6 +674,7 @@ static void registerComponent(struct client_state *state, struct Widget* w)
     if(state->total_components == 0)
     {
         state->focused = state->components[state->focused_index];
+        state->focused->isFocused = 1;
         state->focused_index = 0;
     }
 

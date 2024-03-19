@@ -20,6 +20,7 @@ struct Widget {
     void (*key_press)(struct Widget*, uint32_t state, int);
     enum ComponentType type;
     void *child;
+    int isFocused;
 };
 
 
