@@ -13,7 +13,8 @@
 #include <xkbcommon/xkbcommon.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "gui-toolkit.c"
+#include "gui-widget.h"
+#include "gui-textfield.h"
 
 enum pointer_event_mask {
        POINTER_EVENT_ENTER = 1 << 0,
