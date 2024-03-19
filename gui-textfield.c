@@ -63,13 +63,8 @@ static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_F
 
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
-
-    //   if(widget->focused
     struct TextField* t = (struct TextField*)widget->child;
     
-    //int width = w_width;
-    //int height = w_height;
-
     char* text = t->text;
     int textLength = t->text_length;
 
@@ -82,7 +77,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     int xOffset = widget->x;
     int yOffset = widget->y;
 
-    const int MAX_LINE_CHARS = 30;
+    const int MAX_LINE_CHARS = 15; //Note: need to calculate this
     const int LINE_SPACEING = 10;
     for (int i = 0; i < textLength; i++)
     {
@@ -92,7 +87,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
         if(i % MAX_LINE_CHARS == 0 && i > 0)
         {
             yOffset += face->glyph->bitmap.rows + LINE_SPACEING;
-            xOffset = 0;
+            xOffset = widget->x;
         }
 
         draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
