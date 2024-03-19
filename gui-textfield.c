@@ -7,10 +7,45 @@
 #include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 
+static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
+{
+//NOTE: need to stop textboxes overflowing there borders
+    int hSteps = widget->width;
+    int vSteps = widget->height;
+    int cursor = 0; 
 
+    for(int i = 0; i < vSteps; i++)
+    {
+        cursor = widget->x + ((stride/4)*widget->y) + ((stride/4)*i);
+        data[cursor] = 0xFFFF0000;
+    }
+
+    cursor = widget->x + ((stride/4) * widget->y);
+    for(int i = 0; i < hSteps; i++)
+    {
+        cursor = cursor+1;
+        data[cursor] = 0xFFFF0000;
+    }
+
+    int cursorH = cursor;
+    for(int i = 0; i < vSteps; i++)
+    {
+        cursor = cursorH + ((stride/4)*i);
+        data[cursor] = 0xFFFF0000;
+    }
+
+    
+    for(int i = 0; i < hSteps; i++)
+    {
+        cursor = cursor-1;
+        data[cursor] = 0xFFFF0000;
+    }
+}
 
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
+
+    //   if(widget->focused
     struct TextField* t = (struct TextField*)widget->child;
     
     int width = w_width;
@@ -56,6 +91,8 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     //// Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
+    
+    addBorder(widget,data,stride,w_width,w_height);
 }
 
 
