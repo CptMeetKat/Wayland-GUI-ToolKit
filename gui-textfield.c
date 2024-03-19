@@ -42,14 +42,33 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
     }
 }
 
+static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
+{
+    for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+    {
+        for (int x = 0; x < face->glyph->bitmap.width; ++x) 
+        {
+            if(x+xOffset > widget->x+widget->width) //Prevent overflowing right
+            {
+                break;
+            }
+
+            if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
+                data[((y+yOffset)*w_width)+x+xOffset] = 0xFFFFFFFF; //white
+            else
+                data[((y+yOffset)*w_width)+x+xOffset] = 0x00000000; //Transparent
+        }
+    }
+}
+
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
 
     //   if(widget->focused
     struct TextField* t = (struct TextField*)widget->child;
     
-    int width = w_width;
-    int height = w_height;
+    //int width = w_width;
+    //int height = w_height;
 
     char* text = t->text;
     int textLength = t->text_length;
@@ -60,13 +79,14 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     FT_New_Face(library, "DejaVuSansMono.ttf", 0, &face);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
 
-    int xOffset = 0 + widget->x;
-    int yOffset = 0 + widget->y;
+    int xOffset = widget->x;
+    int yOffset = widget->y;
 
     const int MAX_LINE_CHARS = 30;
     const int LINE_SPACEING = 10;
     for (int i = 0; i < textLength; i++)
     {
+
         FT_Load_Char(face, text[i], FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
         if(i % MAX_LINE_CHARS == 0 && i > 0)
@@ -75,27 +95,17 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
             xOffset = 0;
         }
 
-        for (int y = 0; y < face->glyph->bitmap.rows; ++y)
-        {
-            for (int x = 0; x < face->glyph->bitmap.width; ++x) {
-
-                if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
-                    data[((y+yOffset)*width)+x+xOffset] = 0xFFFFFFFF;
-                else
-                    data[((y+yOffset)*width)+x+xOffset] = 0xFF000000;
-            }
-        }
+        draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
         xOffset += face->glyph->bitmap.width;
     }
+
+    if(widget->isFocused)
+        addBorder(widget,data,stride,w_width,w_height);
 
     //// Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
     
-    if(widget->isFocused)
-    {
-        addBorder(widget,data,stride,w_width,w_height);
-    }
 }
 
 
