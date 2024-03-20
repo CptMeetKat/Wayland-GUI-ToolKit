@@ -44,7 +44,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
 
 static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
 {
-    for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+        for (int y = 0; y < face->glyph->bitmap.rows; ++y)
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
@@ -77,9 +77,9 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     int xOffset = widget->x;
     int yOffset = widget->y;
 
-    const int MAX_LINE_CHARS = 15; //Note: need to calculate this
+    const int MAX_LINE_CHARS = 8; //Note: need to calculate this
     const int LINE_SPACEING = 10;
-    for (int i = 0; i < textLength; i++)
+        for (int i = 0; i < textLength; i++)
     {
 
         FT_Load_Char(face, text[i], FT_LOAD_RENDER);
@@ -91,7 +91,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
         }
 
         draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
-        xOffset += face->glyph->bitmap.width;
+        xOffset += face->glyph->advance.x >> 6;
     }
 
     if(widget->isFocused)
