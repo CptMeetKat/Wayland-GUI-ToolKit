@@ -5,7 +5,7 @@
 #include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 
-static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
+static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     int hSteps = widget->width;
     int vSteps = widget->height;
@@ -13,11 +13,11 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
 
     for(int i = 0; i < vSteps; i++)
     {
-        cursor = widget->x + ((stride/4)*widget->y) + ((stride/4)*i); //Remove stride from this code, just use w_width
+        cursor = widget->x + (w_width*widget->y) + (w_width*i); 
         data[cursor] = 0xFFFF0000;
     }
 
-    cursor = widget->x + ((stride/4) * widget->y);
+    cursor = widget->x + (w_width * widget->y);
     for(int i = 0; i < hSteps; i++)
     {
         cursor = cursor+1;
@@ -27,7 +27,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
     int cursorH = cursor;
     for(int i = 0; i < vSteps; i++)
     {
-        cursor = cursorH + ((stride/4)*i);
+        cursor = cursorH + (w_width*i);
         data[cursor] = 0xFFFF0000;
     }
 
@@ -100,7 +100,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
 
     if(widget->isFocused)
     {
-        addBorder(widget,data,stride,w_width,w_height);
+        addBorder(widget,data,w_width,w_height);
         draw_cursor( 200  , 300  , 100 ,data,w_width,w_height);
     }
 
