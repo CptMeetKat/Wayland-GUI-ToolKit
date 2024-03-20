@@ -101,13 +101,12 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     if(widget->isFocused)
     {
         addBorder(widget,data,w_width,w_height);
-        draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6,data,w_width,w_height);
+        draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6, data, w_width, w_height);
     }
 
     //// Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
-    
 }
 
 
