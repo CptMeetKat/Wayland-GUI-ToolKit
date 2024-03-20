@@ -168,7 +168,7 @@ draw_frame(struct client_state *state)
     for(int i = 0; i < state->total_components; i++)
     {
         struct Widget* c = state->components[i];
-        c->draw(c, data, stride, width, height); //probably pacakge data and stride together in their own struct
+        c->draw(c, data, width, height); //probably pacakge data and stride together in their own struct
     }
 
     munmap(data, size);

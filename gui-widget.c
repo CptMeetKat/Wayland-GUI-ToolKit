@@ -8,7 +8,7 @@
 
 
 
-void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
+void draw(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     if(widget->type == TEXTBOX)
     {

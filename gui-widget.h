@@ -16,7 +16,7 @@ struct Widget {
     int height;
     int width;
     int order; 
-    void (*draw)(struct Widget*, uint32_t*, int, int, int);
+    void (*draw)(struct Widget*, uint32_t*, int, int);
     void (*key_press)(struct Widget*, uint32_t state, int);
     enum ComponentType type;
     void *child;
@@ -25,6 +25,6 @@ struct Widget {
 
 
 void key_press(struct Widget*, uint32_t state, int);
-void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height);
+void draw(struct Widget* widget, uint32_t *data, int w_width, int w_height);
 
 #endif 
