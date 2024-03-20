@@ -18,6 +18,6 @@ struct TextField
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym);
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height);
 
-struct TextField* create_test_textfield(int x, int y, char font[]);
+struct TextField* create_test_textfield(int x, int y, char font[], int width, char text[]);
 
 #endif 

@@ -48,11 +48,6 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
-            if(x+xOffset > widget->x+widget->width) //Prevent overflowing right
-            {
-                break;
-            }
-
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
                 data[((y+yOffset)*w_width)+x+xOffset] = 0xFFFFFFFF; //white
             else
@@ -78,19 +73,20 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     int xOffset = widget->x;
     int yOffset = widget->y;
 
-    const int MAX_LINE_CHARS = 8; //Note: need to calculate this, this needs to be check with dynamic fonts
     const int LINE_SPACEING = 0;
     for (int i = 0; i < textLength; i++)
     {
-
         FT_Load_Char(face, text[i], FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
-        if(i % MAX_LINE_CHARS == 0 && i > 0 || text[i] == '\n')
+
+        if((face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
+            break;
+
+        if(text[i] == '\n' || (face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
         {
             yOffset += (face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
         }
-
         xOffset += draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
     }
 
@@ -133,7 +129,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 }
 
 
-struct TextField* create_test_textfield(int x, int y, char font[]) {
+struct TextField* create_test_textfield(int x, int y, char font[], int width, char text[]) {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
@@ -155,7 +151,7 @@ struct TextField* create_test_textfield(int x, int y, char font[]) {
     textField->base->x = x;
     textField->base->y = y;
     textField->base->height = 200;
-    textField->base->width = 200;
+    textField->base->width = width;
     textField->base->order = 0;
     textField->base->draw = draw;
 
@@ -165,9 +161,9 @@ struct TextField* create_test_textfield(int x, int y, char font[]) {
 
     textField->draw = draw_textfield;
     textField->base->isFocused = 0;
-    strcpy(textField->text, "WWWWWWWaaaaaaaaaa"); //Change to static memory l8r
+    strcpy(textField->text, text); //Change to static memory l8r
 
-    textField->text_length = 17; //Question this a bit cause im tired
+    textField->text_length = strlen(textField->text); //Question this a bit cause im tired
 
     return textField;
 }
