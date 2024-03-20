@@ -13,29 +13,29 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
 
     for(int i = 0; i < vSteps; i++)
     {
-        cursor = widget->x + (w_width*widget->y) + (w_width*i); 
+        cursor = widget->x + (w_width * (widget->y + i)); 
         data[cursor] = 0xFFFF0000;
     }
 
     cursor = widget->x + (w_width * widget->y);
     for(int i = 0; i < hSteps; i++)
     {
+        data[cursor] = 0xFFFFFF00;
         cursor = cursor+1;
-        data[cursor] = 0xFFFF0000;
     }
 
     int cursorH = cursor;
     for(int i = 0; i < vSteps; i++)
     {
+        data[cursor] = 0xFFFF00FF;
         cursor = cursorH + (w_width*i);
-        data[cursor] = 0xFFFF0000;
     }
 
     
     for(int i = 0; i < hSteps; i++)
     {
+        data[cursor] = 0xFF00FF00;
         cursor = cursor-1;
-        data[cursor] = 0xFFFF0000;
     }
 }
 
