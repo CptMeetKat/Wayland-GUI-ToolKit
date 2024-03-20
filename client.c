@@ -135,42 +135,6 @@ static const struct wl_buffer_listener wl_buffer_listener = {
 };
 
 
-static void draw_redSquare(uint32_t *data, int stride)
-{
-    int hSteps = 30;
-    int vSteps = 30;
-    int cursor = 0;
-
-    for(int i = 0; i < vSteps; i++)
-    {
-        cursor = 85000 + ((stride/4)*i);
-        data[cursor] = 0xFFFF0000;
-    }
-
-
-    for(int i = 0; i < hSteps; i++)
-    {
-        cursor = cursor+1;
-        data[cursor] = 0xFFFF0000;
-    }
-
-    int cursorH = cursor;
-    for(int i = 0; i < vSteps; i++)
-    {
-        cursor = cursorH - ((stride/4)*i);
-        data[cursor] = 0xFFFF0000;
-    }
-
-    
-    for(int i = 0; i < hSteps; i++)
-    {
-        cursor = cursor-1;
-        data[cursor] = 0xFFFF0000;
-    }
-}
-
-
-
 static struct wl_buffer *
 draw_frame(struct client_state *state)
 {
