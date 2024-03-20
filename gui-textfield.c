@@ -7,14 +7,13 @@
 
 static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
-//NOTE: need to stop textboxes overflowing there borders
     int hSteps = widget->width;
     int vSteps = widget->height;
     int cursor = 0; 
 
     for(int i = 0; i < vSteps; i++)
     {
-        cursor = widget->x + ((stride/4)*widget->y) + ((stride/4)*i);
+        cursor = widget->x + ((stride/4)*widget->y) + ((stride/4)*i); //Remove stride from this code, just use w_width
         data[cursor] = 0xFFFF0000;
     }
 
@@ -57,6 +56,15 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
     return face->glyph->advance.x >> 6;
 }
 
+
+void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_height)
+{
+    for( int i = 0; i < height; i++)
+    {
+        data[w_width * (i + y) + x] = 0xFF00FF00; //Need to add window safety to this
+    }
+}
+
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
 {
     struct TextField* t = (struct TextField*)widget->child;
@@ -91,7 +99,10 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     }
 
     if(widget->isFocused)
+    {
         addBorder(widget,data,stride,w_width,w_height);
+        draw_cursor( 200  , 300  , 100 ,data,w_width,w_height);
+    }
 
     //// Cleanup
     FT_Done_Face(face);
