@@ -40,8 +40,10 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
     }
 }
 
-static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
+static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
 {
+    if(letter == '\n') //Cases not to render
+        return 0;
     for (int y = 0; y < face->glyph->bitmap.rows; ++y)
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
@@ -57,6 +59,7 @@ static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_F
                 data[((y+yOffset)*w_width)+x+xOffset] = 0x00000000; //Transparent
         }
     }
+    return face->glyph->advance.x >> 6;
 }
 
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
@@ -88,11 +91,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
             xOffset = widget->x;
         }
 
-        if(text[i] != '\n')
-        {
-            draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
-            xOffset += face->glyph->advance.x >> 6;
-        }
+        xOffset += draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
     }
 
     if(widget->isFocused)
