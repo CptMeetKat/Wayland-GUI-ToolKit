@@ -20,21 +20,21 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     cursor = widget->x + (w_width * widget->y);
     for(int i = 0; i < hSteps; i++)
     {
-        data[cursor] = 0xFFFFFF00;
+        data[cursor] = 0xFFFF0000;
         cursor = cursor+1;
     }
 
     int cursorH = cursor;
     for(int i = 0; i < vSteps; i++)
     {
-        data[cursor] = 0xFFFF00FF;
+        data[cursor] = 0xFFFF0000;
         cursor = cursorH + (w_width*i);
     }
 
     
     for(int i = 0; i < hSteps; i++)
     {
-        data[cursor] = 0xFF00FF00;
+        data[cursor] = 0xFFFF0000;
         cursor = cursor-1;
     }
 }
