@@ -42,6 +42,8 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
 
 static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
 {
+    if(letter == '\n')
+        return;
     for (int y = 0; y < face->glyph->bitmap.rows; ++y)
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
@@ -88,8 +90,11 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
             xOffset = widget->x;
         }
 
-        draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
-        xOffset += face->glyph->advance.x >> 6;
+        if(text[i] != '\n')
+        {
+            draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
+            xOffset += face->glyph->advance.x >> 6;
+        }
     }
 
     if(widget->isFocused)
