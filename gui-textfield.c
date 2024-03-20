@@ -42,8 +42,6 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
 
 static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
 {
-    if(letter == '\n')
-        return;
     for (int y = 0; y < face->glyph->bitmap.rows; ++y)
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
