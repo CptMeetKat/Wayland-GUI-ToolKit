@@ -1,8 +1,6 @@
 
 #include "gui-textfield.h"
-
 #include "gui-widget.h"
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
@@ -44,7 +42,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int stride, int w_w
 
 static void draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
 {
-        for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+    for (int y = 0; y < face->glyph->bitmap.rows; ++y)
     {
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
@@ -71,22 +69,22 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_wid
     FT_Library library;
     FT_Face face;
     FT_Init_FreeType(&library);
-    FT_New_Face(library, "DejaVuSansMono.ttf", 0, &face);
+    FT_New_Face(library, t->font, 0, &face);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
 
     int xOffset = widget->x;
     int yOffset = widget->y;
 
-    const int MAX_LINE_CHARS = 8; //Note: need to calculate this
-    const int LINE_SPACEING = 10;
-        for (int i = 0; i < textLength; i++)
+    const int MAX_LINE_CHARS = 8; //Note: need to calculate this, this needs to be check with dynamic fonts
+    const int LINE_SPACEING = 0;
+    for (int i = 0; i < textLength; i++)
     {
 
         FT_Load_Char(face, text[i], FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
-        if(i % MAX_LINE_CHARS == 0 && i > 0)
+        if(i % MAX_LINE_CHARS == 0 && i > 0 || text[i] == '\n')
         {
-            yOffset += face->glyph->bitmap.rows + LINE_SPACEING;
+            yOffset += (face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
         }
 
@@ -126,12 +124,14 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
         appendChar(textfield, sym);
+    else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
+        appendChar(textfield, '\n');
     else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
        removeChar(textfield);
 }
 
 
-struct TextField* create_test_textfield(int x, int y) {
+struct TextField* create_test_textfield(int x, int y, char font[]) {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
@@ -152,19 +152,20 @@ struct TextField* create_test_textfield(int x, int y) {
     textField->base->child = textField;  
     textField->base->x = x;
     textField->base->y = y;
-    textField->base->height = 100;
+    textField->base->height = 200;
     textField->base->width = 200;
     textField->base->order = 0;
     textField->base->draw = draw;
 
     textField->key_press = key_press_textfield;
     textField->base->key_press = key_press;
+    strcpy(textField->font, font);
 
     textField->draw = draw_textfield;
     textField->base->isFocused = 0;
-    strcpy(textField->text, "Hello"); //Change to static memory l8r
+    strcpy(textField->text, "WWWWWWWaaaaaaaaaa"); //Change to static memory l8r
 
-    textField->text_length = 5; //Question this a bit cause im tired
+    textField->text_length = 17; //Question this a bit cause im tired
 
     return textField;
 }

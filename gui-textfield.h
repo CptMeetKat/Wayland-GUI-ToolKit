@@ -8,6 +8,7 @@ struct TextField
     struct Widget *base;
     char text[128]; //Eventually will cause run time error
     int text_length;
+    char font[64];
 
     void (*key_press)(struct TextField*, uint32_t state, int);
     void (*draw)(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height);
@@ -17,6 +18,6 @@ struct TextField
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym);
 void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height);
 
-struct TextField* create_test_textfield(int x, int y);
+struct TextField* create_test_textfield(int x, int y, char font[]);
 
 #endif 

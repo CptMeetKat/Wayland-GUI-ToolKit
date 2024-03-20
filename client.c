@@ -689,9 +689,8 @@ int main(int argc, char *argv[])
     state.height = 480;
 
     state.focused = NULL;
-    registerComponent(&state, create_test_textfield(10, 20)->base);
-    registerComponent(&state, create_test_textfield(100, 300)->base);
-
+    registerComponent(&state, create_test_textfield(10, 20,"DejaVuSansMono.ttf")->base);
+    registerComponent(&state, create_test_textfield(300, 200, "DejaVuSerif.ttf")->base);
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
