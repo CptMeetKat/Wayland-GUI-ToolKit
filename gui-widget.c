@@ -13,7 +13,7 @@ void draw(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_
     if(widget->type == TEXTBOX)
     {
         struct TextField* t = (struct TextField*) widget->child; 
-        t->draw(widget, data, stride, w_width, w_height);
+        t->draw(widget, data, w_width, w_height);
     }
     //else if ( OTHER COMPONENT )
 }

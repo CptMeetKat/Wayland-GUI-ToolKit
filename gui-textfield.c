@@ -65,7 +65,7 @@ void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_he
     }
 }
 
-void draw_textfield(struct Widget* widget, uint32_t *data, int stride, int w_width, int w_height)
+void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     struct TextField* t = (struct TextField*)widget->child;
     
