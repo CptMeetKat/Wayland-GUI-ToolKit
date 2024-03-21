@@ -431,12 +431,24 @@ static const struct wl_pointer_listener wl_pointer_listener = {
        .axis_discrete = wl_pointer_axis_discrete,
 };
 
-static void cycleFocused(struct client_state *state)
+static void cycle_focus_forward(struct client_state *state)
 {
     state->focused->isFocused = 0; //Unfocus
     state->focused_index +=1; //this does not work once we start focusing out of order
     if(state->total_components <= state->focused_index)
         state->focused_index = 0;
+
+    struct Widget* next = state->components[state->focused_index];
+    state->focused = next;
+    next->focus(next);
+}
+
+static void cycle_focus_backward(struct client_state *state)
+{
+    state->focused->isFocused = 0; //Unfocus
+    state->focused_index -=1; //this does not work once we start focusing out of order
+    if(state->focused_index < 0)
+        state->focused_index = state->total_components - 1;
 
     struct Widget* next = state->components[state->focused_index];
     state->focused = next;
@@ -463,7 +475,9 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 
     int sym_code = (int)sym;
     if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
-        cycleFocused(client_state);
+        cycle_focus_forward(client_state);
+    else if(sym_code == 65056 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //reverse TAB
+        cycle_focus_backward(client_state);
     else if(client_state->focused != NULL)
         client_state->focused->key_press(client_state->focused, state, (int)sym);
 
