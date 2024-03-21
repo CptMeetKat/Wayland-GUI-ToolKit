@@ -6,7 +6,7 @@
 
 
 enum ComponentType {
-    TEXTBOX,
+    TEXTBOX, //Need to modify name
     SQUARE
 };
 

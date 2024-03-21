@@ -5,6 +5,17 @@
 #include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 
+
+void blink_cursor(void* widget, void* args)
+{
+    struct TextField* t = ((struct Widget*)widget)->child;
+    if(t->cursor_visible)
+        t->cursor_visible = 0;
+    else
+        t->cursor_visible = 1;
+    printf("cursor_visible: %d\n", t->cursor_visible);
+}
+
 static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     int hSteps = widget->width;
@@ -101,7 +112,8 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     if(widget->isFocused)
     {
         addBorder(widget,data,w_width,w_height);
-        draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6, data, w_width, w_height);
+        if(t->cursor_visible)
+            draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6, data, w_width, w_height);
     }
 
     //// Cleanup

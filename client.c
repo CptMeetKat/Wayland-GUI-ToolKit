@@ -15,6 +15,7 @@
 #include FT_FREETYPE_H
 #include "gui-widget.h"
 #include "gui-textfield.h"
+#include "timed-event.h"
 
 enum pointer_event_mask {
        POINTER_EVENT_ENTER = 1 << 0,
@@ -119,9 +120,12 @@ struct client_state {
 
     struct Widget* focused;
     int focused_index;
+
+
+    uint32_t last_cursor_blink;
+    
+    struct TimedEventContainer events;
 };
-
-
 
 static void
 wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
@@ -233,7 +237,7 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 static const struct wl_callback_listener wl_surface_frame_listener;
 
 static void
-wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
+wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete)
 {
 	/* Destroy this callback */
 	wl_callback_destroy(cb);
@@ -245,9 +249,11 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 
 	/* Update scroll amount at 24 pixels per second */
 	if (state->last_frame != 0) {
-		int elapsed = time - state->last_frame;
-	state->offset += elapsed / 1000.0 * 24;
+		int elapsed = time_complete - state->last_frame;
+        state->offset += elapsed / 1000.0 * 24;
 	}
+    
+    check(&(state->events), time_complete); //Check for timed events to render
 
 	/* Submit a frame for this event */
 	struct wl_buffer *buffer = draw_frame(state);
@@ -257,7 +263,7 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
 	// wl_surface_damage_buffer(state->wl_surface, 0, 0, 400, 400);
 	wl_surface_commit(state->wl_surface);
 
-	state->last_frame = time;
+	state->last_frame = time_complete;
 }
 
 static const struct wl_callback_listener wl_surface_frame_listener = {
@@ -462,7 +468,7 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 
 
     int sym_code = (int)sym;
-    if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
         cycleFocused(client_state);
     else if(client_state->focused != NULL)
         client_state->focused->key_press(client_state->focused, state, (int)sym);
@@ -631,6 +637,18 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = registry_global_remove,
 };
 
+
+static void registerInterval(struct client_state *state, struct Widget* w, void (*run)(void*, void*), int interval)
+{
+    struct Event e;
+    e.time = 0;
+    e.object = w;
+    e.args = NULL;
+    e.run = run;
+    e.interval = interval;
+    createEvent(&(state->events), e); 
+}
+
 static void registerComponent(struct client_state *state, struct Widget* w)
 {
     state->components[state->total_components] = w;
@@ -644,6 +662,10 @@ static void registerComponent(struct client_state *state, struct Widget* w)
 
     state->total_components = state->total_components + 1;   
     //Unsafe if to many components, due to no resizeing definition
+    
+    
+    if(w->type == TEXTBOX)
+        registerInterval(state, w, blink_cursor, 1000); // Ill need a unfocus widget function soon
 }
 
 int main(int argc, char *argv[])
