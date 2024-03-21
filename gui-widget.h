@@ -18,6 +18,7 @@ struct Widget {
     int order; 
     void (*draw)(struct Widget*, uint32_t*, int, int);
     void (*key_press)(struct Widget*, uint32_t state, int);
+    void (*focus)(struct Widget*);
     enum ComponentType type;
     void *child;
     int isFocused;
@@ -26,5 +27,6 @@ struct Widget {
 
 void key_press(struct Widget*, uint32_t state, int);
 void draw(struct Widget* widget, uint32_t *data, int w_width, int w_height);
+void focus_widget(struct Widget* widget);
 
 #endif 

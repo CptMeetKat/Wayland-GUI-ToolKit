@@ -15,7 +15,6 @@
 #include FT_FREETYPE_H
 #include "gui-widget.h"
 #include "gui-textfield.h"
-#include "timed-event.h"
 
 enum pointer_event_mask {
        POINTER_EVENT_ENTER = 1 << 0,
@@ -120,11 +119,6 @@ struct client_state {
 
     struct Widget* focused;
     int focused_index;
-
-
-    uint32_t last_cursor_blink;
-    
-    struct TimedEventContainer events;
 };
 
 static void
@@ -253,8 +247,6 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
         state->offset += elapsed / 1000.0 * 24;
 	}
     
-    check(&(state->events), time_complete); //Check for timed events to render
-
 	/* Submit a frame for this event */
 	struct wl_buffer *buffer = draw_frame(state);
 	wl_surface_attach(state->wl_surface, buffer, 0, 0);
@@ -441,12 +433,16 @@ static const struct wl_pointer_listener wl_pointer_listener = {
 
 static void cycleFocused(struct client_state *state)
 {
-    state->focused->isFocused = 0;
-    state->focused_index +=1;
+
+    state->focused->isFocused = 0; //Unfocus
+    state->focused_index +=1; //this does not work once we start focusing out of order
     if(state->total_components <= state->focused_index)
         state->focused_index = 0;
-    state->focused = state->components[state->focused_index];
-    state->focused->isFocused = 1;
+
+    struct Widget* next = state->components[state->focused_index];
+    state->focused = next;
+    next->focus(next);
+    //TextField needs access to the EventQueue
 }
 
 
@@ -637,18 +633,6 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = registry_global_remove,
 };
 
-
-static void registerInterval(struct client_state *state, struct Widget* w, void (*run)(void*, void*), int interval)
-{
-    struct Event e;
-    e.time = 0;
-    e.object = w;
-    e.args = NULL;
-    e.run = run;
-    e.interval = interval;
-    createEvent(&(state->events), e); 
-}
-
 static void registerComponent(struct client_state *state, struct Widget* w)
 {
     state->components[state->total_components] = w;
@@ -662,10 +646,6 @@ static void registerComponent(struct client_state *state, struct Widget* w)
 
     state->total_components = state->total_components + 1;   
     //Unsafe if to many components, due to no resizeing definition
-    
-    
-    if(w->type == TEXTBOX)
-        registerInterval(state, w, blink_cursor, 1000); // Ill need a unfocus widget function soon
 }
 
 int main(int argc, char *argv[])

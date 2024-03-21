@@ -4,16 +4,14 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
+#include "time.h"
 
-
-void blink_cursor(void* widget, void* args)
+void blink_cursor(struct TextField* t)
 {
-    struct TextField* t = ((struct Widget*)widget)->child;
     if(t->cursor_visible)
         t->cursor_visible = 0;
     else
         t->cursor_visible = 1;
-    printf("cursor_visible: %d\n", t->cursor_visible);
 }
 
 static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_height)
@@ -67,6 +65,13 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
     return face->glyph->advance.x >> 6;
 }
 
+void focus_textfield(struct TextField* textfield)
+{
+    time_t timer;
+    time(&timer);
+    textfield->last_blink = timer;
+}
+
 
 void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_height)
 {
@@ -78,6 +83,7 @@ void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_he
 
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
+    // I feel like this should be TextField parametre for consistency
     struct TextField* t = (struct TextField*)widget->child;
     
     char* text = t->text;
@@ -112,7 +118,16 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     if(widget->isFocused)
     {
         addBorder(widget,data,w_width,w_height);
-        if(t->cursor_visible)
+
+        time_t timer;
+        time(&timer);
+
+        if(t->last_blink < timer)
+        {
+            blink_cursor(t);
+            t->last_blink = timer;
+        } 
+        if(t->cursor_visible) 
             draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6, data, w_width, w_height);
     }
 
@@ -186,6 +201,10 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, ch
     strcpy(textField->text, text); //Change to static memory l8r
 
     textField->text_length = strlen(textField->text); //Question this a bit cause im tired
+    
+    textField->base->focus = focus_widget;
+    textField->focus = focus_textfield;
+    //This function should do an equivalent of super()
 
     return textField;
 }
