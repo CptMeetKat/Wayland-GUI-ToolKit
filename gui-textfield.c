@@ -6,7 +6,7 @@
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 #include "time.h"
 
-void blink_cursor(struct TextField* t)
+void toggle_cursor(struct TextField* t)
 {
     if(t->cursor_visible)
         t->cursor_visible = 0;
@@ -124,7 +124,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 
         if(t->last_blink < timer)
         {
-            blink_cursor(t);
+            toggle_cursor(t);
             t->last_blink = timer;
         } 
         if(t->cursor_visible) 

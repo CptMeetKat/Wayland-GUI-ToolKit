@@ -433,7 +433,6 @@ static const struct wl_pointer_listener wl_pointer_listener = {
 
 static void cycleFocused(struct client_state *state)
 {
-
     state->focused->isFocused = 0; //Unfocus
     state->focused_index +=1; //this does not work once we start focusing out of order
     if(state->total_components <= state->focused_index)
@@ -442,7 +441,6 @@ static void cycleFocused(struct client_state *state)
     struct Widget* next = state->components[state->focused_index];
     state->focused = next;
     next->focus(next);
-    //TextField needs access to the EventQueue
 }
 
 
@@ -636,15 +634,16 @@ static const struct wl_registry_listener wl_registry_listener = {
 static void registerComponent(struct client_state *state, struct Widget* w)
 {
     state->components[state->total_components] = w;
+    state->total_components = state->total_components + 1;   
     
-    if(state->total_components == 0)
+    if(state->total_components == 1)
     {
         state->focused = state->components[state->focused_index];
         state->focused->isFocused = 1;
         state->focused_index = 0;
+        w->focus(w);
     }
 
-    state->total_components = state->total_components + 1;   
     //Unsafe if to many components, due to no resizeing definition
 }
 
