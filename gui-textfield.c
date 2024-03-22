@@ -239,6 +239,20 @@ static int insertChar(struct TextField* textfield, int max_length, char new_char
     return 1;
 }
 
+int remove_char(struct TextField* textfield, int position)
+{
+    if(position < 0 || position >= textfield->text_length)
+        return 0;
+
+    for(int i = position; i < textfield->text_length-1; i++)
+    {
+        textfield->text[i] = textfield->text[i+1]; 
+    }
+    textfield->text_length -=1;
+    textfield->text[textfield->text_length] = '\0';
+    return 1;
+}
+
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
@@ -259,9 +273,15 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
     }
     else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Backspace
     {
-        removeChar(textfield);
-        set_cursor_position(textfield, textfield->text_length);
-        textfield->cursor_index = textfield->text_length;
+        if( remove_char(textfield, textfield->cursor_index-1) )
+        {   
+            textfield->cursor_index -= 1;
+            set_cursor_position(textfield, textfield->cursor_index);
+        } 
+
+        //removeChar(textfield);
+        //set_cursor_position(textfield, textfield->text_length);
+        //textfield->cursor_index = textfield->text_length;
     }
     else if (sym == 65361 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Left
     {
