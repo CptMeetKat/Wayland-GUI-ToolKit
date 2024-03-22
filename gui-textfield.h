@@ -1,12 +1,14 @@
 
 #ifndef GUI_TEXTFIELD_H
 #define GUI_TEXTFIELD_H  
-
+#define GUI_TEXTFIELD_MAX_TEXT 128
 #include <stdint.h>
+
+
 struct TextField
 {
     struct Widget *base;
-    char text[128]; //Eventually will cause run time error
+    char text[GUI_TEXTFIELD_MAX_TEXT]; //Eventually will cause run time error
     int text_length;
     char font[64];
     int cursor_visible;

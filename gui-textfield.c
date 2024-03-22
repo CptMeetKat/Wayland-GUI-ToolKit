@@ -179,8 +179,12 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 
 
 
-static void appendChar(struct TextField* textfield, char c)
+static int appendChar(struct TextField* textfield, char c)
 {
+
+    if(textfield->text_length >= GUI_TEXTFIELD_MAX_TEXT-1)
+        return 0;
+
     textfield->text[textfield->text_length] = c;
     textfield->text[textfield->text_length+1] = '\0';
     textfield->text_length = textfield->text_length+1; 
@@ -188,6 +192,7 @@ static void appendChar(struct TextField* textfield, char c)
     set_cursor_position(textfield, textfield->text_length);
     textfield->cursor_index = textfield->text_length;
     
+    return 1;
 }
 
 
