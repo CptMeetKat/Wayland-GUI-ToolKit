@@ -188,9 +188,6 @@ static int appendChar(struct TextField* textfield, char c)
     textfield->text[textfield->text_length] = c;
     textfield->text[textfield->text_length+1] = '\0';
     textfield->text_length = textfield->text_length+1; 
-    //textfield->cursor_x += 26;
-    set_cursor_position(textfield, textfield->text_length);
-    textfield->cursor_index = textfield->text_length;
     
     return 1;
 }
@@ -218,11 +215,23 @@ static void force_cursor_state(struct TextField* textfield, int state)
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
+    {
         appendChar(textfield, sym);
+        set_cursor_position(textfield, textfield->text_length);
+        textfield->cursor_index = textfield->text_length;
+    }
     else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
+    {
         appendChar(textfield, '\n');
+        set_cursor_position(textfield, textfield->text_length);
+        textfield->cursor_index = textfield->text_length;
+    }
     else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Backspace
+    {
         removeChar(textfield);
+        set_cursor_position(textfield, textfield->text_length);
+        textfield->cursor_index = textfield->text_length;
+    }
     else if (sym == 65361 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Left
     {
         textfield->cursor_index -= 1;
