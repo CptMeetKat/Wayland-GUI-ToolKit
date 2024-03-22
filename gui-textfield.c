@@ -278,22 +278,24 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
             textfield->cursor_index -= 1;
             set_cursor_position(textfield, textfield->cursor_index);
         } 
-
-        //removeChar(textfield);
-        //set_cursor_position(textfield, textfield->text_length);
-        //textfield->cursor_index = textfield->text_length;
     }
     else if (sym == 65361 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Left
     {
-        textfield->cursor_index -= 1;
-        set_cursor_position(textfield, textfield->cursor_index);
-        force_cursor_state(textfield, 1);
+        if(textfield->cursor_index > 0)
+        {
+            textfield->cursor_index -= 1;
+            set_cursor_position(textfield, textfield->cursor_index);
+            force_cursor_state(textfield, 1);
+        }
     }
     else if (sym == 65363 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Right
     {
-        textfield->cursor_index += 1;
-        set_cursor_position(textfield, textfield->cursor_index);
-        force_cursor_state(textfield, 1);
+        if(textfield->cursor_index <= textfield->text_length-1)
+        {
+            textfield->cursor_index += 1;
+            set_cursor_position(textfield, textfield->cursor_index);
+            force_cursor_state(textfield, 1);
+        }
     }
     //else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
     //{
@@ -303,16 +305,6 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
     //{
     //    force_cursor_state(textfield, 1);
     //}
-    
-
-//    for(int i = 0; i < textfield->text_length; i++)
-//    {
-//        if(textfield->text[i] == '\n')
-//            printf("_");
-//        else
-//            printf("%c", textfield->text[i]);
-//    }
-//    printf("\n"); 
 } 
 
 
