@@ -10,6 +10,9 @@ struct TextField
     int text_length;
     char font[64];
     int cursor_visible;
+    int cursor_x;
+    int cursor_y;
+    int cursor_index;
     long int last_blink;
 
     void (*key_press)(struct TextField*, uint32_t state, int);

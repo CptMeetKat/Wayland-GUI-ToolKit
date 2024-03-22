@@ -81,6 +81,41 @@ void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_he
     }
 }
 
+void set_cursor_position(struct TextField* textfield, int index)
+{
+    FT_Library library;
+    FT_Face face;
+    FT_Init_FreeType(&library);
+    FT_New_Face(library, textfield->font, 0, &face);
+    FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
+
+    int x = textfield->base->x;
+    int y = textfield->base->y;
+
+    const int LINE_SPACEING = 0;
+    for(int i = 0; /*i < textfield->text_length && */ i < index; i++)
+    {
+        FT_Load_Char(face, textfield->text[i], FT_LOAD_RENDER);
+        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
+
+        if((face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
+            break;
+
+        if(textfield->text[i] == '\n' || (face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+        {
+            y += (face->size->metrics.height >> 6) + LINE_SPACEING;
+            x = textfield->base->x;
+        }
+        x += face->glyph->advance.x >> 6;
+    }
+
+    textfield->cursor_x = x;
+    textfield->cursor_y = y;
+   
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
+}
+
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     // I feel like this should be TextField parametre for consistency
@@ -94,6 +129,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     FT_Init_FreeType(&library);
     FT_New_Face(library, t->font, 0, &face);
     FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
+
 
     int xOffset = widget->x;
     int yOffset = widget->y;
@@ -114,6 +150,10 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
         }
         xOffset += draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
     }
+    int fontHeight = face->size->metrics.height >> 6;
+    //// Cleanup
+    FT_Done_Face(face);
+    FT_Done_FreeType(library);
 
     if(widget->isFocused)
     {
@@ -128,12 +168,13 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
             t->last_blink = timer;
         } 
         if(t->cursor_visible) 
-            draw_cursor( xOffset, yOffset, face->size->metrics.height >> 6, data, w_width, w_height);
+        {
+//            t->cursor_x = xOffset; //Slight interference here
+//            t->cursor_y = yOffset; //Slight interference here
+            draw_cursor(t->cursor_x, t->cursor_y, fontHeight  , data, w_width, w_height);
+        }
     }
 
-    //// Cleanup
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
 }
 
 
@@ -143,6 +184,10 @@ static void appendChar(struct TextField* textfield, char c)
     textfield->text[textfield->text_length] = c;
     textfield->text[textfield->text_length+1] = '\0';
     textfield->text_length = textfield->text_length+1; 
+    //textfield->cursor_x += 26;
+    set_cursor_position(textfield, textfield->text_length);
+    textfield->cursor_index = textfield->text_length;
+    
 }
 
 
@@ -152,18 +197,48 @@ static void removeChar(struct TextField* textfield)
     {
         textfield->text[textfield->text_length-1] = '\0';
         textfield->text_length = textfield->text_length - 1;
+        set_cursor_position(textfield, textfield->text_length);
+        textfield->cursor_index = textfield->text_length;
     }
+}
+
+static void force_cursor_state(struct TextField* textfield, int state)
+{
+    textfield->cursor_visible = 1;
+    time_t timer;
+    time(&timer);
+    textfield->last_blink = timer+1;
 }
 
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
-    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
+    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
         appendChar(textfield, sym);
     else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
         appendChar(textfield, '\n');
-    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED)
-       removeChar(textfield);
-}
+    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Backspace
+        removeChar(textfield);
+    else if (sym == 65361 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Left
+    {
+        textfield->cursor_index -= 1;
+        set_cursor_position(textfield, textfield->cursor_index);
+        force_cursor_state(textfield, 1);
+    }
+    else if (sym == 65363 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Right
+    {
+        textfield->cursor_index += 1;
+        set_cursor_position(textfield, textfield->cursor_index);
+        force_cursor_state(textfield, 1);
+    }
+    else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
+    {
+        force_cursor_state(textfield, 1);
+    }
+    else if (sym == 65362 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
+    {
+        force_cursor_state(textfield, 1);
+    }
+} 
 
 
 struct TextField* create_test_textfield(int x, int y, char font[], int width, char text[]) {
@@ -204,6 +279,10 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, ch
     
     textField->base->focus = focus_widget;
     textField->focus = focus_textfield;
+
+    textField->cursor_index = textField->text_length;
+    set_cursor_position(textField, textField->cursor_index);
+
     //This function should do an equivalent of super()
 
     return textField;
