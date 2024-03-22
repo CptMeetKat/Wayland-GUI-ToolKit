@@ -168,11 +168,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
             t->last_blink = timer;
         } 
         if(t->cursor_visible) 
-        {
-//            t->cursor_x = xOffset; //Slight interference here
-//            t->cursor_y = yOffset; //Slight interference here
             draw_cursor(t->cursor_x, t->cursor_y, fontHeight  , data, w_width, w_height);
-        }
     }
 
 }
@@ -212,16 +208,55 @@ static void force_cursor_state(struct TextField* textfield, int state)
     textfield->last_blink = timer+1;
 }
 
+
+
+static int insertChar(struct TextField* textfield, int max_length, char new_char, int position)
+{
+    int text_length = textfield->text_length;
+    char* text = textfield->text; 
+
+    if(text_length+1 >= max_length-1)
+        return 0;
+
+    if(position < 0) 
+        position = 0;
+
+    if(position > text_length)
+        position = text_length;
+
+    for(int i = text_length; position <= i; i--)
+    {
+        text[i] = text[i-1];
+    }
+
+    text_length+=1;
+    text[text_length] = '\0';
+    text[position] = new_char;
+
+    textfield->text_length += 1;
+
+    return 1;
+}
+
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
     {
-        appendChar(textfield, sym);
-        set_cursor_position(textfield, textfield->text_length);
-        textfield->cursor_index = textfield->text_length;
+        //appendChar(textfield, sym);
+        if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
+        {
+            textfield->cursor_index += 1;
+            set_cursor_position(textfield, textfield->cursor_index);
+        }
     }
     else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
     {
+        
+      // if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, '\n', textfield->cursor_index) )
+      //  {
+      //      textfield->cursor_index += 1;
+      //      set_cursor_position(textfield, textfield->cursor_index);
+      //  }
         appendChar(textfield, '\n');
         set_cursor_position(textfield, textfield->text_length);
         textfield->cursor_index = textfield->text_length;
