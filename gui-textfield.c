@@ -106,7 +106,8 @@ void set_cursor_position(struct TextField* textfield, int index)
             y += (face->size->metrics.height >> 6) + LINE_SPACEING;
             x = textfield->base->x;
         }
-        x += face->glyph->advance.x >> 6;
+        if(textfield->text[i] != '\n')
+            x += face->glyph->advance.x >> 6;
     }
 
     textfield->cursor_x = x;
@@ -242,7 +243,6 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
     if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
     {
-        //appendChar(textfield, sym);
         if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
         {
             textfield->cursor_index += 1;
@@ -251,15 +251,11 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
     }
     else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
     {
-        
-      // if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, '\n', textfield->cursor_index) )
-      //  {
-      //      textfield->cursor_index += 1;
-      //      set_cursor_position(textfield, textfield->cursor_index);
-      //  }
-        appendChar(textfield, '\n');
-        set_cursor_position(textfield, textfield->text_length);
-        textfield->cursor_index = textfield->text_length;
+       if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, '\n', textfield->cursor_index) )
+       {
+           textfield->cursor_index += 1;
+           set_cursor_position(textfield, textfield->cursor_index);
+       }
     }
     else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Backspace
     {
@@ -279,14 +275,24 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
         set_cursor_position(textfield, textfield->cursor_index);
         force_cursor_state(textfield, 1);
     }
-    else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
-    {
-        force_cursor_state(textfield, 1);
-    }
-    else if (sym == 65362 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
-    {
-        force_cursor_state(textfield, 1);
-    }
+    //else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
+    //{
+    //    force_cursor_state(textfield, 1);
+    //}
+    //else if (sym == 65362 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
+    //{
+    //    force_cursor_state(textfield, 1);
+    //}
+    
+
+//    for(int i = 0; i < textfield->text_length; i++)
+//    {
+//        if(textfield->text[i] == '\n')
+//            printf("_");
+//        else
+//            printf("%c", textfield->text[i]);
+//    }
+//    printf("\n"); 
 } 
 
 
