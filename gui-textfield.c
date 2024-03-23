@@ -91,10 +91,13 @@ void focus_textfield(struct TextField* textfield)
 }
 
 
-void draw_cursor(int x, int y, int height, uint32_t *data, int w_width, int w_height)
+void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data, int w_width, int w_height)
 {
     for( int i = 0; i < height; i++)
     {
+        if(! in_widget(widget, widget->x, y + i))
+           continue;
+
         data[w_width * (i + y) + x] = 0xFF00FF00; //Need to add window safety to this
     }
 }
@@ -187,7 +190,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
             t->last_blink = timer;
         } 
         if(t->cursor_visible) 
-            draw_cursor(t->cursor_x, t->cursor_y, fontHeight  , data, w_width, w_height);
+            draw_cursor(widget, t->cursor_x, t->cursor_y, fontHeight  , data, w_width, w_height);
     }
 
 }
@@ -326,7 +329,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 } 
 
 
-struct TextField* create_test_textfield(int x, int y, char font[], int width, char text[]) {
+struct TextField* create_test_textfield(int x, int y, char font[], int width, int height, char text[]) {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
@@ -347,7 +350,7 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, ch
     textField->base->child = textField;  
     textField->base->x = x;
     textField->base->y = y;
-    textField->base->height = 200;
+    textField->base->height = height;
     textField->base->width = width;
     textField->base->order = 0;
     textField->base->draw = draw;

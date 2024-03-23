@@ -29,6 +29,6 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 void toggle_cursor(struct TextField* textfield);
 void focus_textfield(struct TextField* textfield);
 
-struct TextField* create_test_textfield(int x, int y, char font[], int width, char text[]);
+struct TextField* create_test_textfield(int x, int y, char font[], int width, int height, char text[]);
 
 #endif 
