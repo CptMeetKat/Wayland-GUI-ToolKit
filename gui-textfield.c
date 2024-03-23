@@ -11,9 +11,7 @@ static int in_widget(struct Widget* widget, int x, int y)
     if(x < (widget->x + widget->width) && x >= widget->x)
     {
         if(y < (widget->y + widget->height) && y >= widget->y)
-        {
             return 1;
-        }
     }
 
     return 0;
@@ -24,9 +22,7 @@ static int in_window(int w_width, int w_height, int x, int y)
     if(x < w_width && x >= 0)
     {
         if(y < w_height && y >= 0)
-        {
             return 1;
-        }
     }
 
     return 0;
@@ -64,13 +60,10 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
         data[cursor] = 0xFFFF0000;
     }
 
-   //This kinda broken, need to calculate pixel not go by relatively 
     for(int i = 0; i < vSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + widget->width, widget->y + i))
             break;
-
-        //cursor = cursorH + (w_width*i);
         cursor = widget->x + widget->width + (w_width * (i + widget->y));
         data[cursor] = 0xFFFF0000;
     }
