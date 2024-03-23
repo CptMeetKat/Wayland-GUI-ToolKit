@@ -11,8 +11,6 @@
 #include <stdio.h>
 #include "xdg-shell-client-protocol.h"
 #include <xkbcommon/xkbcommon.h>
-//#include "include/ft2build.h"
-//#include FT_FREETYPE_H
 #include "gui-widget.h"
 #include "gui-textfield.h"
 
@@ -666,6 +664,7 @@ int main(int argc, char *argv[])
     struct client_state state = { 0 };
     state.width = 640;
     state.height = 480;
+        
 
     state.focused = NULL;
     registerComponent(&state, create_test_textfield(10, 20,"DejaVuSansMono.ttf", 200, "HeyZukoHere")->base);
