@@ -1,0 +1,4 @@
+-lwayland-client
+-lxkbcommon
+-Iinclude
+-lfreetype
