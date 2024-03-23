@@ -48,12 +48,30 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     }
 }
 
-static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset, int yOffset, int w_width, int w_height)
+
+static int in_widget(struct Widget* widget, int x, int y)
+{
+    if(x < (widget->x + widget->width) && x >= widget->x)
+    {
+        if(y < (widget->y + widget->height) && y >= widget->y)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset,
+                       int yOffset, int w_width, int w_height)
 {
     if(letter == '\n') //Cases not to render
         return 0;
-    for (int y = 0; y < face->glyph->bitmap.rows; ++y)
+    for (int y = 0; y < face->glyph->bitmap.rows; ++y) //Why is this ++y?, same thing?
     {
+        if(! in_widget(widget, widget->x, y + yOffset  ))
+           continue;
+
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
