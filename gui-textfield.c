@@ -92,6 +92,10 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
 
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
+            if(!in_window(w_width, w_height, x+xOffset , y+yOffset))//Ideally this could be incorporated into the loop condition instead of its own if
+                break;
+            
+
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
                 data[((y+yOffset)*w_width)+x+xOffset] = 0xFFFFFFFF; //white
             else
@@ -115,6 +119,9 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
     {
         if(! in_widget(widget, widget->x, y + i))
            break;
+
+        if(!in_window(w_width, w_height, x, y+i))//Ideally this could be incorporated into the loop condition instead of its own if
+            break;
 
         data[w_width * (i + y) + x] = 0xFF00FF00; //Need to add window safety to this
     }
