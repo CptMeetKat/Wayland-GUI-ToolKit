@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include "xdg-shell-client-protocol.h"
 #include <xkbcommon/xkbcommon.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include "include/ft2build.h"
+//#include FT_FREETYPE_H
 #include "gui-widget.h"
 #include "gui-textfield.h"
 

@@ -4,6 +4,7 @@
 #ifndef GUI_WIDGET_H
 #define GUI_WIDGET_H  
 
+#include <stdint.h>
 
 enum ComponentType {
     TEXTBOX, //Need to modify name
