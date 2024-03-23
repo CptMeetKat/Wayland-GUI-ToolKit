@@ -6,6 +6,32 @@
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 #include "time.h"
 
+static int in_widget(struct Widget* widget, int x, int y)
+{
+    if(x < (widget->x + widget->width) && x >= widget->x)
+    {
+        if(y < (widget->y + widget->height) && y >= widget->y)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int in_window(int w_width, int w_height, int x, int y)
+{
+    if(x < w_width && x >= 0)
+    {
+        if(y < w_height && y >= 0)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void toggle_cursor(struct TextField* t)
 {
     if(t->cursor_visible)
@@ -22,6 +48,9 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
 
     for(int i = 0; i < vSteps; i++)
     {
+        printf("%d %d\n", i, vSteps);
+        if( ! in_window(w_width, w_height, widget->x, widget->y + i))
+            break;
         cursor = widget->x + (w_width * (widget->y + i)); 
         data[cursor] = 0xFFFF0000;
     }
@@ -29,38 +58,34 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     cursor = widget->x + (w_width * widget->y);
     for(int i = 0; i < hSteps; i++)
     {
+        if( ! in_window(w_width, w_height, widget->x + i ,widget->y))
+            break;
+        cursor = widget->x + i + (w_width * widget->y );
         data[cursor] = 0xFFFF0000;
-        cursor = cursor+1;
     }
 
-    int cursorH = cursor;
+   //This kinda broken, need to calculate pixel not go by relatively 
     for(int i = 0; i < vSteps; i++)
     {
+        if( ! in_window(w_width, w_height, widget->x + widget->width, widget->y + i))
+            break;
+
+        //cursor = cursorH + (w_width*i);
+        cursor = widget->x + widget->width + (w_width * (i + widget->y));
         data[cursor] = 0xFFFF0000;
-        cursor = cursorH + (w_width*i);
     }
 
     
     for(int i = 0; i < hSteps; i++)
     {
+        if( ! in_window(w_width, w_height, widget->x + i ,widget->y + widget->height))
+            break;
+        cursor = (widget->x + i) + (w_width * (widget->height + widget->y));
         data[cursor] = 0xFFFF0000;
-        cursor = cursor-1;
     }
 }
 
 
-static int in_widget(struct Widget* widget, int x, int y)
-{
-    if(x < (widget->x + widget->width) && x >= widget->x)
-    {
-        if(y < (widget->y + widget->height) && y >= widget->y)
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
 
 static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset,
                        int yOffset, int w_width, int w_height)

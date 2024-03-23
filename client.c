@@ -670,6 +670,9 @@ int main(int argc, char *argv[])
     registerComponent(&state, create_test_textfield(10, 20,"DejaVuSansMono.ttf", 250, 200, "HeyZukoHere")->base);
     registerComponent(&state, create_test_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere")->base);
     registerComponent(&state, create_test_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW")->base);
+    registerComponent(&state, create_test_textfield(10, 300, "DejaVuSerif.ttf", 200, 200, "aW")->base);
+    registerComponent(&state, create_test_textfield(450, 300, "DejaVuSerif.ttf", 200, 200, "aW")->base);
+    
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
