@@ -70,7 +70,7 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
     for (int y = 0; y < face->glyph->bitmap.rows; ++y) //Why is this ++y?, same thing?
     {
         if(! in_widget(widget, widget->x, y + yOffset  ))
-           continue;
+           break;
 
         for (int x = 0; x < face->glyph->bitmap.width; ++x) 
         {
@@ -96,7 +96,7 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
     for( int i = 0; i < height; i++)
     {
         if(! in_widget(widget, widget->x, y + i))
-           continue;
+           break;
 
         data[w_width * (i + y) + x] = 0xFF00FF00; //Need to add window safety to this
     }
