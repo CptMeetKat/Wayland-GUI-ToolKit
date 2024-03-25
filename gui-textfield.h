@@ -8,8 +8,6 @@
 struct TextField
 {
     struct Widget *base;
-    char text[GUI_TEXTFIELD_MAX_TEXT]; //Eventually will cause run time error
-    int text_length;
     char font[64];
     int cursor_visible;
     int cursor_x;

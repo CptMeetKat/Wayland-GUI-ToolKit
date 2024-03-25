@@ -5,7 +5,6 @@
 static void flip_left_to_right(struct GapBuffer* gb);
 static void flip_right_to_left(struct GapBuffer* gb);
 
-
 void gb_print_left(struct GapBuffer* gb)
 {
     printf("L: ");
@@ -91,7 +90,7 @@ static void flip_left_to_right(struct GapBuffer* gb)
 
 static void flip_right_to_left(struct GapBuffer* gb)
 {
-    if(gb->size <= 0)
+if(gb->size <= 0)
         return;
 
      gb->buffer_left[gb->next_left] = gb->buffer_right[gb->next_right + 1];
@@ -115,6 +114,15 @@ void gb_print(struct GapBuffer* gb)
 void gb_append(struct GapBuffer *gb, char new_char)
 {
     gb_insert(gb, new_char, gb->size);
+}
+
+
+void gb_set_text(struct GapBuffer* gb, char* text, int text_length)
+{
+    for(int i = 0; i < text_length; i++)
+    {
+        gb_append(gb, text[i]);
+    }
 }
 
 void gb_remove(struct GapBuffer *gb, int position)

@@ -141,18 +141,19 @@ void set_cursor_position(struct TextField* textfield, int index)
     const int LINE_SPACEING = 0;
     for(int i = 0; /*i < textfield->text_length && */ i < index; i++)
     {
-        FT_Load_Char(face, textfield->text[i], FT_LOAD_RENDER);
+        char letter = gb_get(&(textfield->gb), i);
+        FT_Load_Char(face, letter, FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
 
         if((face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        if(textfield->text[i] == '\n' || (face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+        if(letter == '\n' || (face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
         {
             y += (face->size->metrics.height >> 6) + LINE_SPACEING;
             x = textfield->base->x;
         }
-        if(textfield->text[i] != '\n')
+        if(letter != '\n')
             x += face->glyph->advance.x >> 6;
     }
 
@@ -168,8 +169,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     // I feel like this should be TextField parametre for consistency
     struct TextField* t = (struct TextField*)widget->child;
     
-    char* text = t->text;
-    int textLength = t->text_length;
+    int textLength = t->gb.size;
 
     FT_Library library;
     FT_Face face;
@@ -184,18 +184,19 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     const int LINE_SPACEING = 0;
     for (int i = 0; i < textLength; i++)
     {
-        FT_Load_Char(face, text[i], FT_LOAD_RENDER);
+        char letter = gb_get(&(t->gb), i);
+        FT_Load_Char(face, letter, FT_LOAD_RENDER);
         FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
 
         if((face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        if(text[i] == '\n' || (face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
+        if(letter == '\n' || (face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
         {
             yOffset += (face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
         }
-        xOffset += draw_letter(text[i], data, widget, face, xOffset, yOffset, w_width, w_height);
+        xOffset += draw_letter(letter, data, widget, face, xOffset, yOffset, w_width, w_height);
     }
     int fontHeight = face->size->metrics.height >> 6;
     //// Cleanup
@@ -220,33 +221,6 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 
 }
 
-
-
-static int appendChar(struct TextField* textfield, char c)
-{
-
-    if(textfield->text_length >= GUI_TEXTFIELD_MAX_TEXT-1)
-        return 0;
-
-    textfield->text[textfield->text_length] = c;
-    textfield->text[textfield->text_length+1] = '\0';
-    textfield->text_length = textfield->text_length+1; 
-    
-    return 1;
-}
-
-
-static void removeChar(struct TextField* textfield)
-{
-    if(textfield->text_length > 0)
-    {
-        textfield->text[textfield->text_length-1] = '\0';
-        textfield->text_length = textfield->text_length - 1;
-        set_cursor_position(textfield, textfield->text_length);
-        textfield->cursor_index = textfield->text_length;
-    }
-}
-
 static void force_cursor_state(struct TextField* textfield, int state)
 {
     textfield->cursor_visible = 1;
@@ -259,43 +233,13 @@ static void force_cursor_state(struct TextField* textfield, int state)
 
 static int insertChar(struct TextField* textfield, int max_length, char new_char, int position)
 {
-    int text_length = textfield->text_length;
-    char* text = textfield->text; 
-
-    if(text_length+1 >= max_length-1)
-        return 0;
-
-    if(position < 0) 
-        position = 0;
-
-    if(position > text_length)
-        position = text_length;
-
-    for(int i = text_length; position <= i; i--)
-    {
-        text[i] = text[i-1];
-    }
-
-    text_length+=1;
-    text[text_length] = '\0';
-    text[position] = new_char;
-
-    textfield->text_length += 1;
-
-    return 1;
+    gb_insert(&(textfield->gb), new_char, position);
+    return 1; //TEST ONLY
 }
 
 int remove_char(struct TextField* textfield, int position)
 {
-    if(position < 0 || position >= textfield->text_length)
-        return 0;
-
-    for(int i = position; i < textfield->text_length-1; i++)
-    {
-        textfield->text[i] = textfield->text[i+1]; 
-    }
-    textfield->text_length -=1;
-    textfield->text[textfield->text_length] = '\0';
+    gb_remove(&(textfield->gb), position);
     return 1;
 }
 
@@ -336,7 +280,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
     }
     else if (sym == 65363 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Right
     {
-        if(textfield->cursor_index <= textfield->text_length-1)
+        if(textfield->cursor_index <= textfield->gb.size-1)
         {
             textfield->cursor_index += 1;
             set_cursor_position(textfield, textfield->cursor_index);
@@ -386,18 +330,15 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, in
 
     textField->draw = draw_textfield;
     textField->base->isFocused = 0;
-    strcpy(textField->text, text); //Change to static memory l8r
 
-    textField->text_length = strlen(textField->text); //Question this a bit cause im tired
-    
     textField->base->focus = focus_widget;
     textField->focus = focus_textfield;
 
-    textField->cursor_index = textField->text_length;
-    set_cursor_position(textField, textField->cursor_index);
-
     gb_gap_buffer_init(&(textField->gb));
-
+    gb_set_text(&(textField->gb), text, strlen(text));
+    
+    textField->cursor_index = textField->gb.size;
+    set_cursor_position(textField, textField->cursor_index);
     //This function should do an equivalent of super()
 
     return textField;
