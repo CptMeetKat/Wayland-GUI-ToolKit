@@ -35,18 +35,18 @@ void gb_gap_buffer_init(struct GapBuffer* gb)
     gb->size = 0;
 }
 
-void gb_insert(struct GapBuffer* gb, char new_char, int position)
+int gb_insert(struct GapBuffer* gb, char new_char, int position)
 {
     if(gb->size >= BUFFER_SIZE - 1)
     {
         printf("Runtime error: NO MORE SPACE");
-        exit(1); 
+        return 0;
     }
 
     if(position < 0 || position > gb->size)
     {
         printf("Runtime Error: OUT OF RANGE");
-        exit(1); 
+        return 0;
     }
 
 
@@ -64,6 +64,7 @@ void gb_insert(struct GapBuffer* gb, char new_char, int position)
     gb->buffer_left[gb->next_left] = '\0';
     gb->size++;
 
+    return 1;
 }
 
 char gb_get(struct GapBuffer* gb, int index)

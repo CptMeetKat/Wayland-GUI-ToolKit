@@ -233,14 +233,13 @@ static void force_cursor_state(struct TextField* textfield, int state)
 
 static int insertChar(struct TextField* textfield, int max_length, char new_char, int position)
 {
-    gb_insert(&(textfield->gb), new_char, position);
-    return 1; //TEST ONLY
+    return gb_insert(&(textfield->gb), new_char, position);
 }
 
 int remove_char(struct TextField* textfield, int position)
 {
     gb_remove(&(textfield->gb), position);
-    return 1;
+    return 1; //TEST ONLY
 }
 
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)

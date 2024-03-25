@@ -17,7 +17,7 @@ struct GapBuffer
 };
 
 
-void gb_insert(struct GapBuffer* gb, char new_char, int position);
+int gb_insert(struct GapBuffer* gb, char new_char, int position);
 void gb_append(struct GapBuffer *gb, char new_char);
 void gb_remove(struct GapBuffer *gb, int position);
 void gb_gap_buffer_init(struct GapBuffer* gb);
