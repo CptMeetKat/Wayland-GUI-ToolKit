@@ -396,6 +396,8 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, in
     textField->cursor_index = textField->text_length;
     set_cursor_position(textField, textField->cursor_index);
 
+    gb_gap_buffer_init(&(textField->gb));
+
     //This function should do an equivalent of super()
 
     return textField;

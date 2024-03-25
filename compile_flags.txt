@@ -2,3 +2,4 @@
 -lxkbcommon
 -Iinclude
 -lfreetype
+-Iinclude/gap_buffer

@@ -3,7 +3,7 @@
 #define GUI_TEXTFIELD_H  
 #define GUI_TEXTFIELD_MAX_TEXT 128
 #include <stdint.h>
-
+#include "gap_buffer.h"
 
 struct TextField
 {
@@ -16,6 +16,8 @@ struct TextField
     int cursor_y;
     int cursor_index;
     long int last_blink;
+
+    struct GapBuffer gb;
 
     void (*key_press)(struct TextField*, uint32_t state, int);
     void (*draw)(struct Widget* widget, uint32_t *data, int w_width, int w_height);
