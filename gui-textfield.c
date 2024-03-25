@@ -46,7 +46,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     {
         printf("%d %d\n", i, vSteps);
         if( ! in_window(w_width, w_height, widget->x, widget->y + i))
-            break;
+            continue;
         cursor = widget->x + (w_width * (widget->y + i)); 
         data[cursor] = 0xFFFF0000;
     }
@@ -55,7 +55,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     for(int i = 0; i < hSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + i ,widget->y))
-            break;
+            continue;
         cursor = widget->x + i + (w_width * widget->y );
         data[cursor] = 0xFFFF0000;
     }
@@ -63,7 +63,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     for(int i = 0; i < vSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + widget->width, widget->y + i))
-            break;
+            continue;
         cursor = widget->x + widget->width + (w_width * (i + widget->y));
         data[cursor] = 0xFFFF0000;
     }
@@ -72,7 +72,7 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
     for(int i = 0; i < hSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + i ,widget->y + widget->height))
-            break;
+            continue;
         cursor = (widget->x + i) + (w_width * (widget->height + widget->y));
         data[cursor] = 0xFFFF0000;
     }
@@ -238,8 +238,7 @@ static int insertChar(struct TextField* textfield, int max_length, char new_char
 
 int remove_char(struct TextField* textfield, int position)
 {
-    gb_remove(&(textfield->gb), position);
-    return 1; //TEST ONLY
+    return gb_remove(&(textfield->gb), position);
 }
 
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
