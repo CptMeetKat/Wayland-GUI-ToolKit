@@ -126,19 +126,20 @@ void gb_set_text(struct GapBuffer* gb, char* text, int text_length)
     }
 }
 
-void gb_remove(struct GapBuffer *gb, int position)
+int gb_remove(struct GapBuffer *gb, int position)
 {
     if(gb->size <= 0)
     {
         printf("Runtime error: GapBuffer already empty");
-        exit(1);
+        return 0;
     }
 
     if(position < 0 || position >= gb->size)
     {
         printf("Runtime Error: OUT OF RANGE");
-        exit(1); 
+        return 0;
     }
+
 
 
     if(gb->next_left-1 > position)
@@ -155,7 +156,7 @@ void gb_remove(struct GapBuffer *gb, int position)
     gb->buffer_left[gb->next_left-1] = '\0';
     gb->next_left--;
     gb->size--;
-
+    return 1;
 }
 
 
