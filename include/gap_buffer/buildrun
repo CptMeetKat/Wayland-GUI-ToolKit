@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+cc gap_buffer.c test_gap_buffer.c
+
+if [ $? -eq 0 ]; then
+    ./a.out
+fi
+
