@@ -120,6 +120,11 @@ struct client_state {
 
     int rate;
     int delay;
+
+
+    int last_key_action;
+    int last_key_time;
+    int last_key;
 };
 
 static void
@@ -247,7 +252,15 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
 		int elapsed = time_complete - state->last_frame;
         state->offset += elapsed / 1000.0 * 24;
 	}
-    
+  
+
+    if(time_complete - state->last_key_time > state->delay && state->last_key_action == WL_KEYBOARD_KEY_STATE_PRESSED)
+    {
+       state->focused->key_press(state->focused, state->last_key_action, (int)state->last_key);
+    }
+
+
+
 	/* Submit a frame for this event */
 	struct wl_buffer *buffer = draw_frame(state);
 	wl_surface_attach(state->wl_surface, buffer, 0, 0);
@@ -476,18 +489,22 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
     fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
     xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                            buf, sizeof(buf));
-
-
     int sym_code = (int)sym;
+    
+    client_state->last_key_action = state;
+    client_state->last_key_time = time;
+    client_state->last_key = sym_code;
+                        
     if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
         cycle_focus_forward(client_state);
     else if(sym_code == 65056 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //reverse TAB
         cycle_focus_backward(client_state);
     else if(client_state->focused != NULL)
-        client_state->focused->key_press(client_state->focused, state, (int)sym);
+        client_state->focused->key_press(client_state->focused, state, sym_code);
 
 
     fprintf(stderr, "utf8: '%s'\n", buf);
+
 }
 
 static void
@@ -676,6 +693,9 @@ int main(int argc, char *argv[])
     state.width = 640;
     state.height = 480;
         
+    state.last_key_action = WL_KEYBOARD_KEY_STATE_RELEASED;
+    state.last_key_time = 0;
+    state.last_key = 0;
 
     state.focused = NULL;
     registerComponent(&state, create_textfield(10, 20,"DejaVuSansMono.ttf", 250, 200, "HeyZukoHere")->base);
