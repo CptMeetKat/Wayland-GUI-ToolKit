@@ -678,7 +678,6 @@ int main(int argc, char *argv[])
     registerComponent(&state, create_test_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW")->base);
     registerComponent(&state, create_test_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW")->base);
     registerComponent(&state, create_test_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW")->base);
-// Probably if i use continue instead of break then we can do negatives on the x and y values    
 
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
