@@ -39,6 +39,8 @@ struct pointer_event {
        uint32_t axis_source;
 };
 
+
+
 /* Shared memory support code */
 static void
 randname(char *buf)
@@ -126,6 +128,10 @@ struct client_state {
     int last_key_time;
     int last_key;
 };
+
+
+static void handle_key_input(struct client_state* state, int sym_code, enum wl_keyboard_key_state key_state);
+
 
 static void
 wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
@@ -256,6 +262,8 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
 
     if(time_complete - state->last_key_time > state->delay && state->last_key_action == WL_KEYBOARD_KEY_STATE_PRESSED)
     {
+
+        handle_key_input(state, state->last_key, state->last_key_action);
        state->focused->key_press(state->focused, state->last_key_action, (int)state->last_key);
     }
 
@@ -473,10 +481,19 @@ static void cycle_focus_backward(struct client_state *state)
     next->focus(next);
 }
 
+static void handle_key_input(struct client_state* state, int sym_code, enum wl_keyboard_key_state key_state) 
+{
+    if(sym_code == 65289 && key_state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
+        cycle_focus_forward(state);
+    else if(sym_code == 65056 && key_state == WL_KEYBOARD_KEY_STATE_PRESSED) //reverse TAB
+        cycle_focus_backward(state);
+    else if(state->focused != NULL)
+        state->focused->key_press(state->focused, key_state, sym_code);
+} 
 
 static void
 wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
-               uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+               uint32_t serial, uint32_t time, uint32_t key, uint32_t key_state)
 {
     struct client_state *client_state = data;
     char buf[128];
@@ -485,23 +502,17 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
         client_state->xkb_state, keycode);
     xkb_keysym_get_name(sym, buf, sizeof(buf));
     const char *action =
-        state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
+        key_state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
     fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
     xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                            buf, sizeof(buf));
-    int sym_code = (int)sym;
+    int sym_code = (int)sym; //Investigate if this conversion in necessary, feel unnecessary
     
-    client_state->last_key_action = state;
+    client_state->last_key_action = key_state;
     client_state->last_key_time = time;
     client_state->last_key = sym_code;
-                        
-    if(sym_code == 65289 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
-        cycle_focus_forward(client_state);
-    else if(sym_code == 65056 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //reverse TAB
-        cycle_focus_backward(client_state);
-    else if(client_state->focused != NULL)
-        client_state->focused->key_press(client_state->focused, state, sym_code);
 
+    handle_key_input(client_state, sym_code, key_state);
 
     fprintf(stderr, "utf8: '%s'\n", buf);
 
