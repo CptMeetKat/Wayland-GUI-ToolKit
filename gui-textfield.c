@@ -44,7 +44,6 @@ static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_
 
     for(int i = 0; i < vSteps; i++)
     {
-        printf("%d %d\n", i, vSteps);
         if( ! in_window(w_width, w_height, widget->x, widget->y + i))
             continue;
         cursor = widget->x + (w_width * (widget->y + i)); 
