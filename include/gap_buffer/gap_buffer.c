@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "gap_buffer.h"
 
 static void flip_left_to_right(struct GapBuffer* gb);
