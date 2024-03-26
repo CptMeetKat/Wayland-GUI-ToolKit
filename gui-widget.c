@@ -36,3 +36,38 @@ void focus_widget(struct Widget* widget)
         t->focus(t);
     }
 }
+
+void init_default_widget(struct Widget* widget)
+{
+    widget->x = 0;
+    widget->y = 0;
+    widget->height = 0;
+    widget->width = 0;
+    widget->order = 0;
+    widget->isFocused = 0;
+
+    widget->type =  NOTYPE;
+    widget->child = NULL;
+    widget->draw = draw;
+    widget->key_press = key_press;
+    widget->focus = focus_widget;
+}
+
+void init_widget(struct Widget* widget,
+                 int x,
+                 int y,
+                 int height,
+                 int width,
+                 enum ComponentType type,
+                 void* child)
+{
+    init_default_widget(widget);
+    widget->x = x;
+    widget->y = y;
+    widget->height = height;
+    widget->width = width;
+    widget->type = type;
+    widget->child = child;
+}
+
+

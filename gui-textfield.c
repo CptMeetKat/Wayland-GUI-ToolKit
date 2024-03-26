@@ -303,6 +303,7 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, in
         perror("Memory allocation failed");
         return NULL;
     }
+    
 
     // Allocate memory for the Widget struct
     textField->base = (struct Widget*)malloc(sizeof(struct Widget));
@@ -312,24 +313,11 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, in
         return NULL;
     }
 
-    // Initialize the Widget
-    textField->base->type = TEXTBOX;
-    textField->base->child = textField;  
-    textField->base->x = x;
-    textField->base->y = y;
-    textField->base->height = height;
-    textField->base->width = width;
-    textField->base->order = 0;
-    textField->base->draw = draw;
-
+    init_widget(textField->base, x, y, height, width, TEXTBOX, textField);
+    
     textField->key_press = key_press_textfield;
-    textField->base->key_press = key_press;
     strcpy(textField->font, font);
-
     textField->draw = draw_textfield;
-    textField->base->isFocused = 0;
-
-    textField->base->focus = focus_widget;
     textField->focus = focus_textfield;
 
     gb_gap_buffer_init(&(textField->gb));
@@ -337,7 +325,6 @@ struct TextField* create_test_textfield(int x, int y, char font[], int width, in
     
     textField->cursor_index = textField->gb.size;
     set_cursor_position(textField, textField->cursor_index);
-    //This function should do an equivalent of super()
 
     return textField;
 }
