@@ -117,6 +117,9 @@ struct client_state {
 
     struct Widget* focused;
     int focused_index;
+
+    int rate;
+    int delay;
 };
 
 static void
@@ -553,6 +556,10 @@ wl_keyboard_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
                int32_t rate, int32_t delay)
 {
        /* Left as an exercise for the reader */
+
+    struct client_state *state = data;
+    state->rate = rate;
+    state->delay = delay;
 }
 
 static const struct wl_keyboard_listener wl_keyboard_listener = {
