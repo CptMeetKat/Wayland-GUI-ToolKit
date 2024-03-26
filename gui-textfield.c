@@ -84,23 +84,28 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
 {
     if(letter == '\n') //Cases not to render
         return 0;
-    for (int y = 0; y < face->glyph->bitmap.rows; ++y) //Why is this ++y?, same thing?
-    {
-        if(! in_widget(widget, widget->x, y + yOffset  ))
-           break;
 
-        for (int x = 0; x < face->glyph->bitmap.width; ++x) 
+    long ascender = face->size->metrics.ascender >> 6;
+
+    int base_line_offset = (ascender - face->glyph->bitmap_top); //BASELINE offset
+
+    for (int y = 0; y < face->glyph->bitmap.rows; y++) 
+    {
+        if(! in_widget(widget, widget->x, y + yOffset + base_line_offset))
+            break;
+
+        for (int x = 0; x < face->glyph->bitmap.width; x++) 
         {
-            if(!in_window(w_width, w_height, x+xOffset , y+yOffset))//Ideally this could be incorporated into the loop condition instead of its own if
+            if(!in_window(w_width, w_height, x+xOffset, y+yOffset + base_line_offset))
                 break;
-            
 
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
-                data[((y+yOffset)*w_width)+x+xOffset] = 0xFFFFFFFF; //white
+                data[((y+yOffset + base_line_offset )*w_width)+x+xOffset] = 0xFFFFFFFF; //white
             else
-                data[((y+yOffset)*w_width)+x+xOffset] = 0x00000000; //Transparent
+                data[((y+yOffset + base_line_offset)*w_width)+x+xOffset] = 0x00000000; //Transparent
         }
     }
+    
     return face->glyph->advance.x >> 6;
 }
 
