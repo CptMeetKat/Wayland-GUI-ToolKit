@@ -38,13 +38,13 @@ int gb_insert(struct GapBuffer* gb, char new_char, int position)
 {
     if(gb->size >= BUFFER_SIZE - 1)
     {
-        printf("Runtime error: NO MORE SPACE");
+        printf("Warning: GapBuffer max storage reached\n");
         return 0;
     }
 
     if(position < 0 || position > gb->size)
     {
-        printf("Runtime Error: OUT OF RANGE");
+        printf("Warning: GapBuffer inserting data out of range\n");
         return 0;
     }
 
@@ -129,13 +129,13 @@ int gb_remove(struct GapBuffer *gb, int position)
 {
     if(gb->size <= 0)
     {
-        printf("Runtime error: GapBuffer already empty");
+        printf("Warning: Deleteing from empty buffer\n");
         return 0;
     }
 
     if(position < 0 || position >= gb->size)
     {
-        printf("Runtime Error: OUT OF RANGE");
+        printf("Warning: Trying to delete out of range\n");
         return 0;
     }
 
