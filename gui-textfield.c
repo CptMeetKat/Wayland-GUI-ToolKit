@@ -296,35 +296,52 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 } 
 
 
-struct TextField* create_test_textfield(int x, int y, char font[], int width, int height, char text[]) {
+
+void init_default_textfield(struct TextField* textfield)
+{
+    textfield->key_press = key_press_textfield;
+    textfield->draw = draw_textfield;
+    textfield->focus = focus_textfield;
+    textfield->cursor_x = 0;
+    textfield->cursor_y = 0;
+    textfield->cursor_index = 0;
+    textfield->last_blink = 0;
+    textfield->cursor_visible = 0;
+    textfield->base = NULL;
+    strcpy(textfield->font, "");
+
+    gb_gap_buffer_init(&(textfield->gb));
+}
+
+void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height)
+{
+    init_default_textfield(textfield);
+    strcpy(textfield->font, font);
+
+    gb_set_text( &(textfield->gb), text, text_length);
+    textfield->cursor_index = textfield->gb.size;
+
+    textfield->base = (struct Widget*)malloc(sizeof(struct Widget));
+    if (textfield->base == NULL) {
+        perror("Memory allocation failed");
+        free(textfield);
+        //Need memory safety here, set_cursor_position will crash if no base allocated?
+    }
+    init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield);
+    set_cursor_position(textfield, textfield->cursor_index);
+}
+
+
+struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[]) {
     // Allocate memory for the TextField struct
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
         perror("Memory allocation failed");
         return NULL;
     }
-    
-
-    // Allocate memory for the Widget struct
-    textField->base = (struct Widget*)malloc(sizeof(struct Widget));
-    if (textField->base == NULL) {
-        perror("Memory allocation failed");
-        free(textField);
-        return NULL;
-    }
-
-    init_widget(textField->base, x, y, height, width, TEXTBOX, textField);
-    
-    textField->key_press = key_press_textfield;
-    strcpy(textField->font, font);
-    textField->draw = draw_textfield;
-    textField->focus = focus_textfield;
-
-    gb_gap_buffer_init(&(textField->gb));
-    gb_set_text(&(textField->gb), text, strlen(text));
-    
-    textField->cursor_index = textField->gb.size;
-    set_cursor_position(textField, textField->cursor_index);
+    init_textfield(textField, font, text, strlen(text), x, y, width, height);
 
     return textField;
 }
+
+
