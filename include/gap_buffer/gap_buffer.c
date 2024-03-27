@@ -44,6 +44,8 @@ void gb_release(struct GapBuffer* gb)
 {
     free(gb->buffer_left);
     free(gb->buffer_right);
+    gb->buffer_left = NULL;
+    gb->buffer_right = NULL;
     gb->capacity = 0;
     gb->size = 0;
 }
