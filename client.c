@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200112L
+#define MAX_COMPONENTS 32
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -114,7 +115,7 @@ struct client_state {
     struct xkb_keymap *xkb_keymap;
 
     //components
-    struct Widget *components[32];
+    struct Widget *components[MAX_COMPONENTS];
     int total_components;
 
     struct Widget* focused;
@@ -122,7 +123,6 @@ struct client_state {
 
     int rate;
     int delay;
-
 
     int last_key_action;
     int last_key_time;
@@ -684,6 +684,11 @@ static const struct wl_registry_listener wl_registry_listener = {
 
 static void registerComponent(struct client_state *state, struct Widget* w)
 {
+    if(state->total_components >= MAX_COMPONENTS)
+    {
+       printf("Warning: Exceeded max components"); 
+       return;
+    }
     state->components[state->total_components] = w;
     state->total_components = state->total_components + 1;   
     
@@ -694,8 +699,6 @@ static void registerComponent(struct client_state *state, struct Widget* w)
         state->focused_index = 0;
         w->focus(w);
     }
-
-    //Unsafe if to many components, due to no resizeing definition
 }
 
 int main(int argc, char *argv[])
@@ -709,6 +712,7 @@ int main(int argc, char *argv[])
     state.last_key = 0;
 
     state.focused = NULL;
+
     registerComponent(&state, create_textfield(10, 20,"DejaVuSansMono.ttf", 250, 200, "HeyZukoHere")->base);
     registerComponent(&state, create_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere")->base);
     registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW")->base);
