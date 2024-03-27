@@ -2,13 +2,14 @@
 #ifndef GUI_TEXTFIELD_H
 #define GUI_TEXTFIELD_H  
 #define GUI_TEXTFIELD_MAX_TEXT 128
+#define MAX_FONT 64 
 #include <stdint.h>
 #include "gap_buffer.h"
 
 struct TextField
 {
     struct Widget *base;
-    char font[64];
+    char font[MAX_FONT]; //Magic number, Unsafe?
     int cursor_visible;
     int cursor_x;
     int cursor_y;

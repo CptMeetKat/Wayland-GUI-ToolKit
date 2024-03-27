@@ -147,8 +147,7 @@ void set_cursor_position(struct TextField* textfield, int index)
     {
         char letter = gb_get(&(textfield->gb), i);
         FT_Load_Char(face, letter, FT_LOAD_RENDER);
-        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
-
+        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL ); 
         if((face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
             break;
 
@@ -317,10 +316,20 @@ void init_default_textfield(struct TextField* textfield)
     gb_gap_buffer_init(&(textfield->gb));
 }
 
+void init_font(struct TextField* textfield, char* font)
+{
+    if(strlen(font) >= MAX_FONT)
+    {
+        printf("Error: Font filename too long");
+        exit(1);
+    }
+    strncpy(textfield->font, font, MAX_FONT-1);
+}
+
 void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height)
 {
     init_default_textfield(textfield);
-    strcpy(textfield->font, font);
+    init_font(textfield, font);
 
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor_index = textfield->gb.size;
