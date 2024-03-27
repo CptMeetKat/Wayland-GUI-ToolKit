@@ -124,10 +124,10 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
         if(! in_widget(widget, widget->x, y + i))
            break;
 
-        if(!in_window(w_width, w_height, x, y+i))//Ideally this could be incorporated into the loop condition instead of its own if
+        if(!in_window(w_width, w_height, x, y+i))
             break;
 
-        data[w_width * (i + y) + x] = 0xFF00FF00; //Need to add window safety to this
+        data[w_width * (i + y) + x] = 0xFF00FF00; 
     }
 }
 
@@ -338,7 +338,7 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
     if (textfield->base == NULL) {
         perror("Memory allocation failed");
         free(textfield);
-        //Need memory safety here, set_cursor_position will crash if no base allocated?
+        exit(1);
     }
     init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield);
     set_cursor_position(textfield, textfield->cursor_index);
