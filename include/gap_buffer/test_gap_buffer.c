@@ -28,7 +28,7 @@ int main()
 {
     int outcome = 0;
     struct GapBuffer gb;
-    gb_gap_buffer_init(&gb);
+    gb_gap_buffer_init(&gb, BUFFER_SIZE);
 
     //Insert Start
     gb_insert(&gb, 'A', 0);
@@ -59,6 +59,8 @@ int main()
     //Remove Middle
     gb_remove(&gb, 2);
     outcome += gb_test_verify(&gb, "YXBAab");
+
+    gb_release(&gb);
 
     printf("Test Passed: %d\n", outcome);
     printf("Test Failed: %d\n", gb_total_tests - outcome);

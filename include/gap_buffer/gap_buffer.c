@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "gap_buffer.h"
 
 static void flip_left_to_right(struct GapBuffer* gb);
@@ -24,13 +25,26 @@ void gb_print_right(struct GapBuffer *gb)
     printf("\n");
 }
 
-void gb_gap_buffer_init(struct GapBuffer* gb)
+void gb_gap_buffer_init(struct GapBuffer* gb, int capacity)
 {
+    gb->buffer_left = malloc(sizeof(struct GapBuffer) * capacity); //Add memalloc safety
+    gb->buffer_right = malloc(sizeof(struct GapBuffer) * capacity); //Add memalloc safety
+    gb->capacity = capacity;
+    
     gb->next_left = 0;
     gb->buffer_left[0] = '\0';
 
     gb->next_right = BUFFER_SIZE - 2;
     gb->buffer_right[BUFFER_SIZE - 1] = '\0';
+    gb->size = 0;
+    
+}
+
+void gb_release(struct GapBuffer* gb)
+{
+    free(gb->buffer_left);
+    free(gb->buffer_right);
+    gb->capacity = 0;
     gb->size = 0;
 }
 

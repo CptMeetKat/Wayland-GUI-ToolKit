@@ -313,7 +313,7 @@ void init_default_textfield(struct TextField* textfield)
     textfield->base = NULL;
     strcpy(textfield->font, "");
 
-    gb_gap_buffer_init(&(textfield->gb));
+    gb_gap_buffer_init(&(textfield->gb), BUFFER_SIZE);
 }
 
 void init_font(struct TextField* textfield, char* font)
