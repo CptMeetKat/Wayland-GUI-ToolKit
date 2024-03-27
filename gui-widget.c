@@ -1,6 +1,3 @@
-//#include <ft2build.h>
-//#include FT_FREETYPE_H
-
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 #include "gui-textfield.h"
 #include "gui-widget.h"
