@@ -27,8 +27,8 @@ void gb_print_right(struct GapBuffer *gb)
 
 void gb_gap_buffer_init(struct GapBuffer* gb, int capacity)
 {
-    gb->buffer_left = malloc(sizeof(struct GapBuffer) * capacity); //Add memalloc safety
-    gb->buffer_right = malloc(sizeof(struct GapBuffer) * capacity); //Add memalloc safety
+    gb->buffer_left = (char*)malloc(sizeof(char) * capacity); //Add memalloc safety
+    gb->buffer_right = (char*)malloc(sizeof(char) * capacity); //Add memalloc safety
     gb->capacity = capacity;
     
     gb->next_left = 0;
