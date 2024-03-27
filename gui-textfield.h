@@ -30,6 +30,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym);
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height);
 void toggle_cursor(struct TextField* textfield);
 void focus_textfield(struct TextField* textfield);
+void release_textfield(struct TextField* textfield);
 
 void init_default_textfield(struct TextField* textfield);
 void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height);

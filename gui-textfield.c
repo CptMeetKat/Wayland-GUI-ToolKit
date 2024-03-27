@@ -6,6 +6,11 @@
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 #include "time.h"
 
+void release_textfield(struct TextField* textfield)
+{
+    gb_release(&(textfield->gb));
+}
+
 static int in_widget(struct Widget* widget, int x, int y)
 {
     if(x < (widget->x + widget->width) && x >= widget->x)
