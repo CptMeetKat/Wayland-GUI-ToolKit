@@ -28,7 +28,7 @@ int main()
 {
     int outcome = 0;
     struct GapBuffer gb;
-    gb_gap_buffer_init(&gb, BUFFER_SIZE);
+    gb_gap_buffer_init(&gb, 128);
 
     //Insert Start
     gb_insert(&gb, 'A', 0);

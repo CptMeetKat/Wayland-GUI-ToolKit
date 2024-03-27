@@ -18,7 +18,7 @@ void gb_print_left(struct GapBuffer* gb)
 void gb_print_right(struct GapBuffer *gb)
 {
     printf("R: ");
-    for(int i = gb->next_right+1; i < BUFFER_SIZE - 1; i++)
+    for(int i = gb->next_right+1; i < gb->capacity - 1; i++)
     {
         printf("%c", gb->buffer_right[i]);
     }
@@ -34,8 +34,8 @@ void gb_gap_buffer_init(struct GapBuffer* gb, int capacity)
     gb->next_left = 0;
     gb->buffer_left[0] = '\0';
 
-    gb->next_right = BUFFER_SIZE - 2;
-    gb->buffer_right[BUFFER_SIZE - 1] = '\0';
+    gb->next_right = gb->capacity - 2;
+    gb->buffer_right[gb->capacity - 1] = '\0';
     gb->size = 0;
     
 }
@@ -50,7 +50,7 @@ void gb_release(struct GapBuffer* gb)
 
 int gb_insert(struct GapBuffer* gb, char new_char, int position)
 {
-    if(gb->size >= BUFFER_SIZE - 1)
+    if(gb->size >= gb->capacity - 1)
     {
         printf("Warning: GapBuffer max storage reached\n");
         return 0;

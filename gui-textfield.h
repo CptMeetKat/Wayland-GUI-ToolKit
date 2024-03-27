@@ -3,6 +3,7 @@
 #define GUI_TEXTFIELD_H  
 #define GUI_TEXTFIELD_MAX_TEXT 128
 #define MAX_FONT 64 
+#define BUFFER_SIZE 128 //Need to make this dynamic
 #include <stdint.h>
 #include "gap_buffer.h"
 

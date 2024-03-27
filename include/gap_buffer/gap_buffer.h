@@ -4,7 +4,6 @@
 #ifndef GAP_BUFFER_H
 #define GAP_BUFFER_H 
 
-#define BUFFER_SIZE 128 //Need to make this dynamic
 
 
 struct GapBuffer
