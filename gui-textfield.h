@@ -9,7 +9,7 @@
 struct TextField
 {
     struct Widget *base;
-    char font[MAX_FONT]; //Magic number, Unsafe?
+    char font[MAX_FONT]; 
     int cursor_visible;
     int cursor_x;
     int cursor_y;
