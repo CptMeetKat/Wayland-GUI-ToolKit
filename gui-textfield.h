@@ -17,6 +17,10 @@ struct TextField
     int cursor_index;
     long int last_blink;
 
+
+    int cursor_line;
+    int total_lines;
+
     struct GapBuffer gb;
 
     void (*key_press)(struct TextField*, uint32_t state, int);

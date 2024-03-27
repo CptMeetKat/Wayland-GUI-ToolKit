@@ -146,6 +146,7 @@ void set_cursor_position(struct TextField* textfield, int index)
 
     int x = textfield->base->x;
     int y = textfield->base->y;
+    int line = 0;
 
     const int LINE_SPACEING = 0;
     for(int i = 0; /*i < textfield->text_length && */ i < index; i++)
@@ -159,6 +160,7 @@ void set_cursor_position(struct TextField* textfield, int index)
         if(letter == '\n' || (face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
         {
             y += (face->size->metrics.height >> 6) + LINE_SPACEING;
+            line++;
             x = textfield->base->x;
         }
         if(letter != '\n')
@@ -167,6 +169,7 @@ void set_cursor_position(struct TextField* textfield, int index)
 
     textfield->cursor_x = x;
     textfield->cursor_y = y;
+    textfield->cursor_line = line;
    
     FT_Done_Face(face);
     FT_Done_FreeType(library);
@@ -188,6 +191,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 
     int xOffset = widget->x;
     int yOffset = widget->y;
+    int lines = 0;
 
     const int LINE_SPACEING = 0;
     for (int i = 0; i < textLength; i++)
@@ -203,10 +207,12 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
         {
             yOffset += (face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
+            lines++;
         }
         xOffset += draw_letter(letter, data, widget, face, xOffset, yOffset, w_width, w_height);
     }
     int fontHeight = face->size->metrics.height >> 6;
+    t->total_lines = lines;
     //// Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
@@ -295,29 +301,36 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
     }
     else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
     {
-
-
-
         
         //This is yet too work
-     //   //if( textfield->cursor_y < textfield->base->y + textfield->base->height) 
-     //   //{
-     //       int current_cursor_x = textfield->cursor_x;
-     //       int current_cursor_y = textfield->cursor_y;
-     //       int current_cursor_index = textfield->cursor_index;
-     //       textfield->cursor_index++;
-     //       set_cursor_position(textfield, textfield->cursor_index);
+        //if( textfield->cursor_y < textfield->base->y + textfield->base->height) 
+        if(textfield->cursor_line < textfield->total_lines) 
+        {
+            int current_cursor_x = textfield->cursor_x;
+            int current_cursor_y = textfield->cursor_y;
+            int current_cursor_index = textfield->cursor_index;
+            int current_line = textfield->cursor_line;
 
-     //       while(textfield->cursor_x < current_cursor_x || 
-     //           textfield->cursor_y <= current_cursor_y && 
-     //           textfield->cursor_index > current_cursor_index)
-     //       {
-     //           textfield->cursor_index++;
-     //           set_cursor_position(textfield, textfield->cursor_index);
-     //       }
-     //       force_cursor_state(textfield, 1);
-     //   //}
-
+            while(textfield->cursor_x < current_cursor_x || 
+                textfield->cursor_y <= current_cursor_y && 
+                textfield->cursor_index >= current_cursor_index)
+            {
+                textfield->cursor_index++;
+                set_cursor_position(textfield, textfield->cursor_index);
+                if(textfield->cursor_index > textfield->gb.size-1)
+                {
+                    textfield->cursor_index = textfield->gb.size;
+                    break;
+                }
+                if(textfield->cursor_line > current_line+1)
+                {
+                    textfield->cursor_index--;
+                    set_cursor_position(textfield, textfield->cursor_index);
+                    break;
+                }
+            }
+            force_cursor_state(textfield, 1);
+        }
 
 
 
@@ -358,7 +371,10 @@ void init_default_textfield(struct TextField* textfield)
     textfield->cursor_index = 0;
     textfield->last_blink = 0;
     textfield->cursor_visible = 0;
+    textfield->cursor_line = 0;
     textfield->base = NULL;
+
+
     strcpy(textfield->font, "");
 
     gb_gap_buffer_init(&(textfield->gb), BUFFER_SIZE);
