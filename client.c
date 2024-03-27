@@ -701,17 +701,42 @@ static void registerComponent(struct client_state *state, struct Widget* w)
     }
 }
 
+void init_surface(struct client_state* state, int width, int height)
+{
+    
+    state->width = width;
+    state->height = height;
+        
+    state->last_key_action = WL_KEYBOARD_KEY_STATE_RELEASED;
+    state->last_key_time = 0;
+    state->last_key = 0;
+    state->total_components = 0;
+    state->focused = NULL;
+
+
+    state->wl_display = wl_display_connect(NULL);
+    state->wl_registry = wl_display_get_registry(state->wl_display);
+    state->xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    wl_registry_add_listener(state->wl_registry, &wl_registry_listener, state);
+    wl_display_roundtrip(state->wl_display);
+
+    state->wl_surface = wl_compositor_create_surface(state->wl_compositor);
+    state->xdg_surface = xdg_wm_base_get_xdg_surface(
+            state->xdg_wm_base, state->wl_surface);
+    xdg_surface_add_listener(state->xdg_surface, &xdg_surface_listener, state);
+    state->xdg_toplevel = xdg_surface_get_toplevel(state->xdg_surface);
+    xdg_toplevel_set_title(state->xdg_toplevel, "Example client");
+    xdg_toplevel_add_listener(state->xdg_toplevel, &xdg_toplevel_listener, state);
+    wl_surface_commit(state->wl_surface);
+
+    struct wl_callback *cb = wl_surface_frame(state->wl_surface);
+    wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
+}
+
 int main(int argc, char *argv[])
 {
     struct client_state state = { 0 };
-    state.width = 640;
-    state.height = 480;
-        
-    state.last_key_action = WL_KEYBOARD_KEY_STATE_RELEASED;
-    state.last_key_time = 0;
-    state.last_key = 0;
-
-    state.focused = NULL;
+    init_surface(&state, 640, 480);
 
     registerComponent(&state, create_textfield(10, 20,"DejaVuSansMono.ttf", 250, 200, "HeyZukoHere")->base);
     registerComponent(&state, create_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere")->base);
@@ -720,25 +745,6 @@ int main(int argc, char *argv[])
     registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW")->base);
     registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW")->base);
     registerComponent(&state, create_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW")->base);
-
-    state.wl_display = wl_display_connect(NULL);
-    state.wl_registry = wl_display_get_registry(state.wl_display);
-    state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    wl_registry_add_listener(state.wl_registry, &wl_registry_listener, &state);
-    wl_display_roundtrip(state.wl_display);
-
-    state.wl_surface = wl_compositor_create_surface(state.wl_compositor);
-    state.xdg_surface = xdg_wm_base_get_xdg_surface(
-            state.xdg_wm_base, state.wl_surface);
-    xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
-    state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
-    xdg_toplevel_set_title(state.xdg_toplevel, "Example client");
-    xdg_toplevel_add_listener(state.xdg_toplevel, &xdg_toplevel_listener, &state);
-    wl_surface_commit(state.wl_surface);
-
-    struct wl_callback *cb = wl_surface_frame(state.wl_surface);
-    wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
-
 
     while (wl_display_dispatch(state.wl_display)) {
         /* This space deliberately left blank */
