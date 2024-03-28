@@ -188,9 +188,9 @@ void set_cursor_position(struct TextField* textfield, int index)
 
 void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height)
 {
-    struct TextField* t = (struct TextField*)widget->child;
-    if(widget->isFocused) //Modularise this
+    if(widget->isFocused)
     {
+        struct TextField* t = (struct TextField*)widget->child;
         draw_border(widget,data,w_width,w_height);
 
         time_t timer;
