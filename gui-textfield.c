@@ -355,13 +355,11 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
             }
             break;
     default:
-            if(sym >= ASCII_MIN && sym <= ASCII_MAX) 
+            if(sym >= ASCII_MIN && sym <= ASCII_MAX 
+                && insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
             {
-                if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
-                {
                     textfield->cursor_index += 1;
                     set_cursor_position(textfield, textfield->cursor_index);
-                }
             }
     }
 } 
