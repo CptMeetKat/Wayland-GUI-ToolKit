@@ -381,8 +381,8 @@ void init_default_textfield(struct TextField* textfield)
 
 
     strcpy(textfield->font, "");
+    gb_gap_buffer_default(&(textfield->gb));
 
-    gb_gap_buffer_init(&(textfield->gb), BUFFER_SIZE);
 }
 
 void init_font(struct TextField* textfield, char* font)
@@ -399,6 +399,7 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
 {
     init_default_textfield(textfield);
     init_font(textfield, font);
+    gb_gap_buffer_init(&(textfield->gb), BUFFER_SIZE);
 
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor_index = textfield->gb.size;

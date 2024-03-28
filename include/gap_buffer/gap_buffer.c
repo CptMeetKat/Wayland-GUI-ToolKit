@@ -25,8 +25,20 @@ void gb_print_right(struct GapBuffer *gb)
     printf("\n");
 }
 
+void gb_gap_buffer_default(struct GapBuffer* gb)
+{
+    gb->buffer_left = NULL; //There are no NULL safeties in any of this code
+    gb->buffer_right = NULL;
+
+    gb->capacity = 0;
+    gb->next_left = 0;
+    gb->next_right = 0;
+    gb->size = 0;   
+}
+
 void gb_gap_buffer_init(struct GapBuffer* gb, int capacity)
 {
+    gb_gap_buffer_default(gb);
     gb->buffer_left = (char*)malloc(sizeof(char) * capacity); //Add memalloc safety
     gb->buffer_right = (char*)malloc(sizeof(char) * capacity); //Add memalloc safety
     gb->capacity = capacity;
@@ -36,8 +48,7 @@ void gb_gap_buffer_init(struct GapBuffer* gb, int capacity)
 
     gb->next_right = gb->capacity - 2;
     gb->buffer_right[gb->capacity - 1] = '\0';
-    gb->size = 0;
-    
+    gb->size = 0;   
 }
 
 void gb_release(struct GapBuffer* gb)
