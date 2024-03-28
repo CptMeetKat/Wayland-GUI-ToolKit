@@ -256,7 +256,7 @@ static void force_cursor_state(struct TextField* textfield, int state)
 
 
 
-static int insertChar(struct TextField* textfield, char new_char, int position)
+static int insert_char(struct TextField* textfield, char new_char, int position)
 {
     return gb_insert(&(textfield->gb), new_char, position);
 }
@@ -274,7 +274,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 
     switch(sym) {
         case RETURN_KEY:
-            if( insertChar(textfield, '\n', textfield->cursor_index) )
+            if( insert_char(textfield, '\n', textfield->cursor_index) )
             {
                 textfield->cursor_index += 1;
                 set_cursor_position(textfield, textfield->cursor_index);
@@ -356,7 +356,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
             break;
     default:
             if(sym >= ASCII_MIN && sym <= ASCII_MAX 
-                && insertChar(textfield, sym, textfield->cursor_index) )
+                && insert_char(textfield, sym, textfield->cursor_index) )
             {
                     textfield->cursor_index += 1;
                     set_cursor_position(textfield, textfield->cursor_index);
