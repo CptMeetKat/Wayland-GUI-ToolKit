@@ -36,7 +36,7 @@ void focus_textfield(struct TextField* textfield);
 void release_textfield(struct TextField* textfield);
 
 void init_default_textfield(struct TextField* textfield);
-void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height);
-struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[]);
+void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length);
+struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length);
 
 #endif 

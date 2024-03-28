@@ -395,11 +395,11 @@ void init_font(struct TextField* textfield, char* font)
     strncpy(textfield->font, font, MAX_FONT-1);
 }
 
-void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height)
+void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length)
 {
     init_default_textfield(textfield);
     init_font(textfield, font);
-    gb_gap_buffer_init(&(textfield->gb), BUFFER_SIZE);
+    gb_gap_buffer_init(&(textfield->gb), max_length);
 
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor_index = textfield->gb.size;
@@ -415,14 +415,13 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
 }
 
 
-struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[]) {
-    // Allocate memory for the TextField struct
+struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length) {
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
         perror("Memory allocation failed");
         return NULL;
     }
-    init_textfield(textField, font, text, strlen(text), x, y, width, height);
+    init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length);
 
     return textField;
 }

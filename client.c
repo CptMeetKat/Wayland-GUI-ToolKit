@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 200112L
+#define BUFFER_SIZE 128 //Need to make this dynamic
 #define MAX_COMPONENTS 32
 #include <assert.h>
 #include <errno.h>
@@ -738,13 +739,13 @@ int main(int argc, char *argv[])
     struct client_state state = { 0 };
     init_surface(&state, 640, 480);
 
-    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............")->base);
-//    registerComponent(&state, create_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere")->base);
-//    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW")->base);
-//    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW")->base);
-//    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW")->base);
-//    registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW")->base);
-//    registerComponent(&state, create_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW")->base);
+    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
 
     while (wl_display_dispatch(state.wl_display)) {
         /* This space deliberately left blank */
