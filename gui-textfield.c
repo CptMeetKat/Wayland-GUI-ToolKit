@@ -278,6 +278,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
             {
                 textfield->cursor_index += 1;
                 set_cursor_position(textfield, textfield->cursor_index);
+                force_cursor_state(textfield, 1);
             }
             break;
         case BACKSPACE_KEY:
@@ -285,6 +286,7 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
             {   
                 textfield->cursor_index -= 1;
                 set_cursor_position(textfield, textfield->cursor_index);
+                force_cursor_state(textfield, 1);
             } 
             break;
         case LEFT_ARROW_KEY:
