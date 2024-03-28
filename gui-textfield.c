@@ -160,7 +160,7 @@ void set_cursor_position(struct TextField* textfield, int index)
     int line = 0;
 
     const int LINE_SPACEING = 0;
-    for(int i = 0; /*i < textfield->text_length && */ i < index; i++)
+    for(int i = 0; i < index; i++)
     {
         char letter = gb_get(&(textfield->gb), i);
         FT_Load_Char(face, letter, FT_LOAD_RENDER);
