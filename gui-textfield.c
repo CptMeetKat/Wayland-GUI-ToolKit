@@ -1,3 +1,14 @@
+#define ASCII_MIN 32
+#define ASCII_MAX 126
+#define RETURN_KEY 65293
+#define BACKSPACE_KEY 65288
+#define LEFT_ARROW_KEY 65361
+#define RIGHT_ARROW_KEY 65363
+#define DOWN_ARROW_KEY 65364
+#define UP_ARROW_KEY 65362
+
+
+
 
 #include "gui-textfield.h"
 #include "gui-widget.h"
@@ -255,107 +266,101 @@ int remove_char(struct TextField* textfield, int position)
     return gb_remove(&(textfield->gb), position);
 }
 
+
 void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 {
-    if(sym >= 32 && sym <= 126 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //ASCII char
-    {
-        if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
-        {
-            textfield->cursor_index += 1;
-            set_cursor_position(textfield, textfield->cursor_index);
-        }
-    }
-    else if (sym == 65293 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //RETURN
-    {
-       if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, '\n', textfield->cursor_index) )
-       {
-           textfield->cursor_index += 1;
-           set_cursor_position(textfield, textfield->cursor_index);
-       }
-    }
-    else if (sym == 65288 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Backspace
-    {
-        if( remove_char(textfield, textfield->cursor_index-1) )
-        {   
-            textfield->cursor_index -= 1;
-            set_cursor_position(textfield, textfield->cursor_index);
-        } 
-    }
-    else if (sym == 65361 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Left
-    {
-        if(textfield->cursor_index > 0)
-        {
-            textfield->cursor_index -= 1;
-            set_cursor_position(textfield, textfield->cursor_index);
-            force_cursor_state(textfield, 1);
-        }
-    }
-    else if (sym == 65363 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //Right
-    {
-        if(textfield->cursor_index <= textfield->gb.size-1)
-        {
-            textfield->cursor_index += 1;
-            set_cursor_position(textfield, textfield->cursor_index);
-            force_cursor_state(textfield, 1);
-        }
-    }
-    else if (sym == 65364 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //down
-    {
-        
-        //This is yet too work
-        //if( textfield->cursor_y < textfield->base->y + textfield->base->height) 
-        if(textfield->cursor_line < textfield->total_lines) 
-        {
-            int current_cursor_x = textfield->cursor_x;
-            int current_cursor_y = textfield->cursor_y;
-            int current_cursor_index = textfield->cursor_index;
-            int current_line = textfield->cursor_line;
+    if(state != WL_KEYBOARD_KEY_STATE_PRESSED)
+        return;
 
-            while(textfield->cursor_x < current_cursor_x || 
-                textfield->cursor_y <= current_cursor_y && 
-                textfield->cursor_index >= current_cursor_index)
+    switch(sym) {
+        case RETURN_KEY:
+            if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, '\n', textfield->cursor_index) )
             {
-                textfield->cursor_index++;
+                textfield->cursor_index += 1;
                 set_cursor_position(textfield, textfield->cursor_index);
-                if(textfield->cursor_index > textfield->gb.size-1)
+            }
+            break;
+        case BACKSPACE_KEY:
+            if( remove_char(textfield, textfield->cursor_index-1) )
+            {   
+                textfield->cursor_index -= 1;
+                set_cursor_position(textfield, textfield->cursor_index);
+            } 
+            break;
+        case LEFT_ARROW_KEY:
+            if(textfield->cursor_index > 0)
+            {
+                textfield->cursor_index -= 1;
+                set_cursor_position(textfield, textfield->cursor_index);
+                force_cursor_state(textfield, 1);
+            }
+            break;
+        case RIGHT_ARROW_KEY:
+            if(textfield->cursor_index <= textfield->gb.size-1)
+            {
+                textfield->cursor_index += 1;
+                set_cursor_position(textfield, textfield->cursor_index);
+                force_cursor_state(textfield, 1);
+            }
+            break;
+        case DOWN_ARROW_KEY:
+            if(textfield->cursor_line < textfield->total_lines) 
+            {
+                int current_cursor_x = textfield->cursor_x;
+                int current_cursor_y = textfield->cursor_y;
+                int current_cursor_index = textfield->cursor_index;
+                int current_line = textfield->cursor_line;
+
+                while(textfield->cursor_x < current_cursor_x || 
+                    textfield->cursor_y <= current_cursor_y && 
+                    textfield->cursor_index >= current_cursor_index)
                 {
-                    textfield->cursor_index = textfield->gb.size;
-                    break;
+                    textfield->cursor_index++;
+                    set_cursor_position(textfield, textfield->cursor_index);
+                    if(textfield->cursor_index > textfield->gb.size-1)
+                    {
+                        textfield->cursor_index = textfield->gb.size;
+                        break;
+                    }
+                    if(textfield->cursor_line > current_line+1)
+                    {
+                        textfield->cursor_index--;
+                        set_cursor_position(textfield, textfield->cursor_index);
+                        break;
+                    }
                 }
-                if(textfield->cursor_line > current_line+1)
+                force_cursor_state(textfield, 1);
+            }
+            break;
+        case UP_ARROW_KEY:
+            //NAIVE Implementation
+            if( textfield->cursor_y > textfield->base->y) //This will break if we added padding
+            {
+                int current_cursor_x = textfield->cursor_x;
+                int current_cursor_y = textfield->cursor_y;
+                int current_cursor_index = textfield->cursor_index;
+                textfield->cursor_index--;
+                set_cursor_position(textfield, textfield->cursor_index);
+
+                while(textfield->cursor_x > current_cursor_x || 
+                    textfield->cursor_y >= current_cursor_y && 
+                    textfield->cursor_index < current_cursor_index)
                 {
                     textfield->cursor_index--;
                     set_cursor_position(textfield, textfield->cursor_index);
-                    break;
+                }
+                force_cursor_state(textfield, 1);
+            }
+            break;
+    default:
+            if(sym >= ASCII_MIN && sym <= ASCII_MAX) 
+            {
+                if( insertChar(textfield, GUI_TEXTFIELD_MAX_TEXT, sym, textfield->cursor_index) )
+                {
+                    textfield->cursor_index += 1;
+                    set_cursor_position(textfield, textfield->cursor_index);
                 }
             }
-            force_cursor_state(textfield, 1);
-        }
-
-
-
-
-    }
-    else if (sym == 65362 && state == WL_KEYBOARD_KEY_STATE_PRESSED) //up
-    {
-        //NAIVE Implementation
-        if( textfield->cursor_y > textfield->base->y) //This will break if we added padding
-        {
-            int current_cursor_x = textfield->cursor_x;
-            int current_cursor_y = textfield->cursor_y;
-            int current_cursor_index = textfield->cursor_index;
-            textfield->cursor_index--;
-            set_cursor_position(textfield, textfield->cursor_index);
-
-            while(textfield->cursor_x > current_cursor_x || 
-                textfield->cursor_y >= current_cursor_y && 
-                textfield->cursor_index < current_cursor_index)
-            {
-                textfield->cursor_index--;
-                set_cursor_position(textfield, textfield->cursor_index);
-            }
-            force_cursor_state(textfield, 1);
-        }
     }
 } 
 
