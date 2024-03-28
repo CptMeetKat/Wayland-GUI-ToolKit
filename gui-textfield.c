@@ -52,7 +52,7 @@ void toggle_cursor(struct TextField* t)
         t->cursor_visible = 1;
 }
 
-static void addBorder(struct Widget* widget, uint32_t *data, int w_width, int w_height)
+static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     int hSteps = widget->width;
     int vSteps = widget->height;
@@ -186,9 +186,28 @@ void set_cursor_position(struct TextField* textfield, int index)
     FT_Done_FreeType(library);
 }
 
-void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
+void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height)
 {
-    // I feel like this should be TextField parametre for consistency
+    struct TextField* t = (struct TextField*)widget->child;
+    if(widget->isFocused) //Modularise this
+    {
+        draw_border(widget,data,w_width,w_height);
+
+        time_t timer;
+        time(&timer);
+
+        if(t->last_blink < timer)
+        {
+            toggle_cursor(t);
+            t->last_blink = timer;
+        } 
+        if(t->cursor_visible) 
+            draw_cursor(widget, t->cursor_x, t->cursor_y, t->font_height, data, w_width, w_height);
+    }
+}
+
+void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
+{
     struct TextField* t = (struct TextField*)widget->child;
     
     int textLength = t->gb.size;
@@ -222,28 +241,17 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
         }
         xOffset += draw_letter(letter, data, widget, face, xOffset, yOffset, w_width, w_height);
     }
-    int fontHeight = face->size->metrics.height >> 6;
+    t->font_height = face->size->metrics.height >> 6;
     t->total_lines = lines;
     //// Cleanup
     FT_Done_Face(face);
     FT_Done_FreeType(library);
+}
 
-    if(widget->isFocused) //Modularise this
-    {
-        addBorder(widget,data,w_width,w_height);
-
-        time_t timer;
-        time(&timer);
-
-        if(t->last_blink < timer)
-        {
-            toggle_cursor(t);
-            t->last_blink = timer;
-        } 
-        if(t->cursor_visible) 
-            draw_cursor(widget, t->cursor_x, t->cursor_y, fontHeight  , data, w_width, w_height);
-    }
-
+void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
+{
+    draw_text(widget, data, w_width, w_height);
+    draw_focus(widget, data, w_width, w_height);
 }
 
 static void force_cursor_state(struct TextField* textfield, int state)

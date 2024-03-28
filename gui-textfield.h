@@ -2,7 +2,6 @@
 #ifndef GUI_TEXTFIELD_H
 #define GUI_TEXTFIELD_H  
 #define MAX_FONT 64 
-#define BUFFER_SIZE 128 //Need to make this dynamic
 #include <stdint.h>
 #include "gap_buffer.h"
 
@@ -15,7 +14,7 @@ struct TextField
     int cursor_y;
     int cursor_index;
     long int last_blink;
-
+    int font_height;
 
     int cursor_line;
     int total_lines;
