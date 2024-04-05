@@ -15,7 +15,7 @@
 
 
 
-void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter);
+void add_letter_length_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter);
 
 void text_release_font(struct TextField* textfield)
 {
@@ -167,7 +167,7 @@ void set_cursor_position(struct TextField* textfield, int index)
     for(int i = 0; i < index; i++)
     {
         char letter = gb_get(&(textfield->gb), i);
-        add_letter_to_cursor(textfield, &x, &y, &line, letter);
+        add_letter_length_to_cursor(textfield, &x, &y, &line, letter);
     }
 
     textfield->cursor_x = x;
@@ -276,7 +276,7 @@ void key_press_up(struct TextField* textfield)
 }
 
 
-void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter)
+void add_letter_length_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter)
 {//Consider stripping textfield from here, by providing base arguments, and face
 
     FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
@@ -322,7 +322,7 @@ void key_press_down(struct TextField* textfield)
         int backtrack_y = current_cursor_y;
         int backtrack_line = current_line;
         int backtrack_index = current_cursor_index;
-        add_letter_to_cursor(textfield, &current_cursor_x, &current_cursor_y, &current_line, letter);
+        add_letter_length_to_cursor(textfield, &current_cursor_x, &current_cursor_y, &current_line, letter);
         current_cursor_index++;
 
         if(current_line > textfield->cursor_line+1) //track backwards if we jumped multiple liens 
@@ -371,18 +371,19 @@ void key_press_left_key(struct TextField* textfield)
     {
         textfield->cursor_index -= 1;
         set_cursor_position(textfield, textfield->cursor_index);
-        force_cursor_state(textfield, 1);
     }
+    force_cursor_state(textfield, 1);
 }
+
 
 void shift_cursor_right(struct TextField* textfield)
 {
-        textfield->cursor_index += 1;
-        add_letter_to_cursor(textfield, 
+        add_letter_length_to_cursor(textfield, 
                              &(textfield->cursor_x), 
                              &(textfield->cursor_y), 
                              &(textfield->cursor_line), 
-                             gb_get(&(textfield->gb), textfield->cursor_index-1));
+                             gb_get(&(textfield->gb), textfield->cursor_index));
+    textfield->cursor_index += 1; 
 }
 
 void key_press_right_key(struct TextField* textfield)
