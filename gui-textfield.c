@@ -296,6 +296,7 @@ void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* curso
 }
 
 
+
 void key_press_down(struct TextField* textfield)
 {
 
@@ -374,12 +375,18 @@ void key_press_left_key(struct TextField* textfield)
     }
 }
 
+//void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter)
 void key_press_right_key(struct TextField* textfield)
 {
     if(textfield->cursor_index <= textfield->gb.size-1)
     {
         textfield->cursor_index += 1;
-        set_cursor_position(textfield, textfield->cursor_index);
+        add_letter_to_cursor(textfield, 
+                             &(textfield->cursor_x), 
+                             &(textfield->cursor_y), 
+                             &(textfield->cursor_line), 
+                             gb_get(&(textfield->gb), textfield->cursor_index-1));
+
         force_cursor_state(textfield, 1);
     }
 }
