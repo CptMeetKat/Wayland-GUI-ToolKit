@@ -2,6 +2,7 @@
 #ifndef GUI_TEXTFIELD_H
 #define GUI_TEXTFIELD_H  
 #define MAX_FONT 64 
+#define LINE_SPACEING 0
 #include <stdint.h>
 #include "gap_buffer.h"
 #include <ft2build.h>
@@ -11,14 +12,15 @@ struct TextField
 {
     struct Widget *base;
     char font[MAX_FONT]; 
+    
     int cursor_visible;
     int cursor_x;
     int cursor_y;
     int cursor_index;
+    int cursor_line;
+
     long int last_blink;
     int font_height;
-
-    int cursor_line;
     int total_lines;
 
     struct GapBuffer gb;
