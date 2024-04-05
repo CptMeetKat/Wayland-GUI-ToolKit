@@ -260,14 +260,14 @@ void key_press_up(struct TextField* textfield)
         textfield->cursor.index--;
         set_cursor_position(textfield, textfield->cursor.index);
 
-        int t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
-        while(textfield->cursor.x > current_cursor.x + (t/2) || 
+        int tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
+        while(textfield->cursor.x > current_cursor.x + tolerance || 
             textfield->cursor.y >= current_cursor.y && 
             textfield->cursor.index < current_cursor.index)
         {
             textfield->cursor.index--;
             set_cursor_position(textfield, textfield->cursor.index);
-            t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+            tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
         }
         force_cursor_state(textfield, 1);
     }
@@ -306,9 +306,9 @@ void key_press_down(struct TextField* textfield)
 
     struct Cursor current_cursor = textfield->cursor;
 
-    int t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+    int tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
 
-    while(current_cursor.x + (t/2) < textfield->cursor.x   || 
+    while(current_cursor.x + tolerance < textfield->cursor.x   || 
         current_cursor.y <= textfield->cursor.y )
     {
 
@@ -327,7 +327,7 @@ void key_press_down(struct TextField* textfield)
             current_cursor = backtrack_cursor;
             break;
         }
-        t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+        tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
 
     }
     textfield->cursor = current_cursor;
