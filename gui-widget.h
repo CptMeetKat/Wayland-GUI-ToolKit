@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
-enum ComponentType {
-    TEXTBOX, //Need to modify name
-    SQUARE,
-    NOTYPE
-}; //This enum may not be needed anymore
+//enum ComponentType {
+//    TEXTBOX, //Need to modify name
+//    SQUARE,
+//    NOTYPE
+//}; //This enum may not be needed anymore
 
 struct Widget {
     int x;
@@ -20,7 +20,7 @@ struct Widget {
     int order; 
     int isFocused;
 
-    enum ComponentType type;
+//    enum ComponentType type;
     void *child;
     void (*draw)(struct Widget*, uint32_t*, int, int);
     void (*key_press)(struct Widget*, uint32_t state, int);
@@ -38,7 +38,7 @@ void init_widget(struct Widget* widget,
                  int y,
                  int height,
                  int width,
-                 enum ComponentType type,
+//                 enum ComponentType type,
                  void* child,
                  void (*draw)(struct Widget*, uint32_t*, int, int),
                  void (*key_press)(struct Widget*, uint32_t state, int),

@@ -43,7 +43,7 @@ void init_default_widget(struct Widget* widget)
     widget->order = 0;
     widget->isFocused = 0;
 
-    widget->type =  NOTYPE;
+//    widget->type =  NOTYPE;
     widget->child = NULL;
 //    widget->draw = draw;
 //    widget->key_press = key_press;
@@ -55,7 +55,7 @@ void init_widget(struct Widget* widget,
                  int y,
                  int height,
                  int width,
-                 enum ComponentType type,
+ //                enum ComponentType type,
                  void* child,
 
                  void (*draw)(struct Widget*, uint32_t*, int, int),
@@ -68,7 +68,7 @@ void init_widget(struct Widget* widget,
     widget->y = y;
     widget->height = height;
     widget->width = width;
-    widget->type = type;
+//    widget->type = type;
     widget->child = child;
     widget->draw = draw;
     widget->key_press = key_press;

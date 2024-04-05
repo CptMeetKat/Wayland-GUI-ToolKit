@@ -466,7 +466,8 @@ void init_textfield(struct TextField* textfield,
         free(textfield);
         exit(1);
     }
-    init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield, draw, key_press, focus);
+    //init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield, draw, key_press, focus);
+    init_widget(textfield->base, x, y, height, width, textfield, draw, key_press, focus);
 
 
     set_cursor_position(textfield, textfield->cursor_index);
