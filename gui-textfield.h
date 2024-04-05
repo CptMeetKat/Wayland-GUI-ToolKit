@@ -7,6 +7,7 @@
 #include "gap_buffer.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "cursor.h"
 
 struct TextField
 {
@@ -14,10 +15,13 @@ struct TextField
     char font[MAX_FONT]; 
     
     int cursor_visible;
-    int cursor_x;
-    int cursor_y;
-    int cursor_index;
-    int cursor_line;
+    
+    struct Cursor cursor;
+
+//    int cursor_x;
+//    int cursor_y;
+//    int cursor_index;
+//    int cursor_line;
 
     long int last_blink;
     int font_height;
