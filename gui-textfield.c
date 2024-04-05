@@ -381,10 +381,8 @@ void shift_cursor_right(struct TextField* textfield)
 void key_press_right_key(struct TextField* textfield)
 {
     if(textfield->cursor_index <= textfield->gb.size-1)
-    {
         shift_cursor_right(textfield);
-        force_cursor_state(textfield, 1);
-    }
+    force_cursor_state(textfield, 1);
 }
 
 void key_press_ascii_key(struct TextField* textfield, int sym)
