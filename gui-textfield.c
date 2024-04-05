@@ -8,19 +8,24 @@
 #define UP_ARROW_KEY 65362
 
 
-
-
 #include "gui-textfield.h"
 #include "gui-widget.h"
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include "xdg-shell-client-protocol.h" //these are only included for an enum, mb unnecessary coupling
 #include "time.h"
+
+
+void text_release_font(struct TextField* textfield)
+{
+    FT_Done_Face(textfield->face);
+    FT_Done_FreeType(textfield->library);
+}
 
 void release_textfield(struct TextField* textfield)
 {
     gb_release(&(textfield->gb));
+    text_release_font(textfield);
 }
+
 
 static int in_widget(struct Widget* widget, int x, int y)
 {
@@ -149,12 +154,6 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
 
 void set_cursor_position(struct TextField* textfield, int index)
 {
-    FT_Library library;
-    FT_Face face;
-    FT_Init_FreeType(&library);
-    FT_New_Face(library, textfield->font, 0, &face);
-    FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
-
     int x = textfield->base->x;
     int y = textfield->base->y;
     int line = 0;
@@ -163,27 +162,25 @@ void set_cursor_position(struct TextField* textfield, int index)
     for(int i = 0; i < index; i++)
     {
         char letter = gb_get(&(textfield->gb), i);
-        FT_Load_Char(face, letter, FT_LOAD_RENDER);
-        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL ); 
-        if((face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
+        FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
+        FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
+        if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        if(letter == '\n' || (face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+        if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
         {
-            y += (face->size->metrics.height >> 6) + LINE_SPACEING;
+            y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
             line++;
             x = textfield->base->x;
         }
         if(letter != '\n')
-            x += face->glyph->advance.x >> 6;
+            x += textfield->face->glyph->advance.x >> 6;
     }
 
     textfield->cursor_x = x;
     textfield->cursor_y = y;
     textfield->cursor_line = line;
    
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
 }
 
 void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height)
@@ -212,13 +209,6 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
     
     int textLength = t->gb.size;
 
-    FT_Library library;
-    FT_Face face;
-    FT_Init_FreeType(&library);
-    FT_New_Face(library, t->font, 0, &face);
-    FT_Set_Char_Size(face, 0, 16 * 128, 100, 100);
-
-
     int xOffset = widget->x;
     int yOffset = widget->y;
     int lines = 0;
@@ -227,25 +217,22 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
     for (int i = 0; i < textLength; i++)
     {
         char letter = gb_get(&(t->gb), i);
-        FT_Load_Char(face, letter, FT_LOAD_RENDER);
-        FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
+        FT_Load_Char(t->face, letter, FT_LOAD_RENDER);
+        FT_Render_Glyph( t->face->glyph, FT_RENDER_MODE_NORMAL );
 
-        if((face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
+        if((t->face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        if(letter == '\n' || (face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
+        if(letter == '\n' || (t->face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
         {
-            yOffset += (face->size->metrics.height >> 6) + LINE_SPACEING;
+            yOffset += (t->face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
             lines++;
         }
-        xOffset += draw_letter(letter, data, widget, face, xOffset, yOffset, w_width, w_height);
+        xOffset += draw_letter(letter, data, widget, t->face, xOffset, yOffset, w_width, w_height);
     }
-    t->font_height = face->size->metrics.height >> 6;
+    t->font_height = t->face->size->metrics.height >> 6;
     t->total_lines = lines;
-    //// Cleanup
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
 }
 
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height)
@@ -277,7 +264,7 @@ int remove_char(struct TextField* textfield, int position)
 
 void key_press_up(struct TextField* textfield)
 {
-    //NAIVE Implementation
+    //NAIVE Implementation: set_cursor_position recalculates the cursor position for each character change
     if( textfield->cursor_y > textfield->base->y) //This will break if we added padding
     {
         int current_cursor_x = textfield->cursor_x;
@@ -441,6 +428,11 @@ void init_font(struct TextField* textfield, char* font)
         exit(1);
     }
     strncpy(textfield->font, font, MAX_FONT-1);
+
+
+    FT_Init_FreeType(&(textfield->library));
+    FT_New_Face(textfield->library, textfield->font, 0, &(textfield->face));
+    FT_Set_Char_Size(textfield->face, 0, 16 * 128, 100, 100);
 }
 
 void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length)

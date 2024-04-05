@@ -4,6 +4,8 @@
 #define MAX_FONT 64 
 #include <stdint.h>
 #include "gap_buffer.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 struct TextField
 {
@@ -20,6 +22,10 @@ struct TextField
     int total_lines;
 
     struct GapBuffer gb;
+
+    
+    FT_Library library; //Low key dosent make sense to keep rendering this
+    FT_Face face;
 
     void (*key_press)(struct TextField*, uint32_t state, int);
     void (*draw)(struct Widget* widget, uint32_t *data, int w_width, int w_height);
