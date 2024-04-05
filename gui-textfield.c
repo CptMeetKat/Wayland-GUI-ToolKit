@@ -17,7 +17,8 @@
 void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter);
 void shift_cursor_right(struct TextField* textfield);
 int get_character_width(struct TextField* textfield, char letter);
-                        
+char get_char(struct TextField* textfield, int position);
+
 void text_release_font(struct TextField* textfield)
 {
     FT_Done_Face(textfield->face);
@@ -166,7 +167,7 @@ void set_cursor_position(struct TextField* textfield, int index)
 
     for(int i = 0; i < index; i++)
     {
-        char letter = gb_get(&(textfield->gb), i);
+        char letter = get_char(textfield, i);
         add_letter_length_to_cursor(textfield, &c, letter);
     }
 
@@ -205,7 +206,7 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 
     for (int i = 0; i < textLength; i++)
     {
-        char letter = gb_get(&(t->gb), i);
+        char letter = get_char(t, i);
         FT_Load_Char(t->face, letter, FT_LOAD_RENDER);
         FT_Render_Glyph( t->face->glyph, FT_RENDER_MODE_NORMAL );
 
@@ -250,6 +251,10 @@ int remove_char(struct TextField* textfield, int position)
     return gb_remove(&(textfield->gb), position);
 }
 
+char get_char(struct TextField* textfield, int position)
+{
+    return gb_get(&(textfield->gb), position);
+}
 
 void key_press_up(struct TextField* textfield)
 {
@@ -260,14 +265,14 @@ void key_press_up(struct TextField* textfield)
         textfield->cursor.index--;
         set_cursor_position(textfield, textfield->cursor.index);
 
-        int tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
+        int tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
         while(textfield->cursor.x > current_cursor.x + tolerance || 
             textfield->cursor.y >= current_cursor.y && 
             textfield->cursor.index < current_cursor.index)
         {
             textfield->cursor.index--;
             set_cursor_position(textfield, textfield->cursor.index);
-            tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
+            tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
         }
         force_cursor_state(textfield, 1);
     }
@@ -306,7 +311,7 @@ void key_press_down(struct TextField* textfield)
 
     struct Cursor current_cursor = textfield->cursor;
 
-    int tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
+    int tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
 
     while(current_cursor.x + tolerance < textfield->cursor.x   || 
         current_cursor.y <= textfield->cursor.y )
@@ -315,7 +320,7 @@ void key_press_down(struct TextField* textfield)
         if(current_cursor.index > textfield->gb.size-1) // End when cursor reaches the last position
             break;
 
-        char letter = gb_get(&(textfield->gb), current_cursor.index);
+        char letter = get_char(textfield, current_cursor.index);
 
         struct Cursor backtrack_cursor = current_cursor;
     
@@ -327,7 +332,7 @@ void key_press_down(struct TextField* textfield)
             current_cursor = backtrack_cursor;
             break;
         }
-        tolerance = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) / 2;
+        tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
 
     }
     textfield->cursor = current_cursor;
@@ -361,7 +366,7 @@ void shift_cursor_right(struct TextField* textfield)
 {
         add_letter_length_to_cursor(textfield, 
                                     &(textfield->cursor),
-                                    gb_get(&(textfield->gb), textfield->cursor.index));
+                                    get_char(textfield, textfield->cursor.index));
     textfield->cursor.index += 1; 
 }
 
