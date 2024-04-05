@@ -16,6 +16,7 @@
 
 void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter);
 void shift_cursor_right(struct TextField* textfield);
+int get_character_width(struct TextField* textfield, char letter);
                         
 void text_release_font(struct TextField* textfield)
 {
@@ -259,12 +260,14 @@ void key_press_up(struct TextField* textfield)
         textfield->cursor.index--;
         set_cursor_position(textfield, textfield->cursor.index);
 
-        while(textfield->cursor.x > current_cursor.x || 
+        int t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+        while(textfield->cursor.x > current_cursor.x + (t/2) || 
             textfield->cursor.y >= current_cursor.y && 
             textfield->cursor.index < current_cursor.index)
         {
             textfield->cursor.index--;
             set_cursor_position(textfield, textfield->cursor.index);
+            t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
         }
         force_cursor_state(textfield, 1);
     }
