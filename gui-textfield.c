@@ -130,8 +130,11 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
     return face->glyph->advance.x >> 6;
 }
 
-void focus_textfield(struct TextField* textfield)
-{
+void focus_textfield(struct Widget* widget)
+{//Not sure if this is necessary, may be able to just move to init
+
+    struct TextField* textfield = widget->child;
+    widget->isFocused = 1;
     time_t timer;
     time(&timer);
     textfield->last_blink = timer;
@@ -369,8 +372,9 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
 }
 
 
-void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
+void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
 {
+    struct TextField* textfield = widget->child;
     if(state != WL_KEYBOARD_KEY_STATE_PRESSED)
         return;
 
@@ -403,9 +407,9 @@ void key_press_textfield(struct TextField* textfield, uint32_t state, int sym)
 
 void init_default_textfield(struct TextField* textfield)
 {
-    textfield->key_press = key_press_textfield;
-    textfield->draw = draw_textfield;
-    textfield->focus = focus_textfield;
+//    textfield->key_press = key_press_textfield;
+//    textfield->draw = draw_textfield;
+//    textfield->focus = focus_textfield;
     textfield->cursor_x = 0;
     textfield->cursor_y = 0;
     textfield->cursor_index = 0;
@@ -435,7 +439,19 @@ void init_font(struct TextField* textfield, char* font)
     FT_Set_Char_Size(textfield->face, 0, 16 * 128, 100, 100);
 }
 
-void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length)
+void init_textfield(struct TextField* textfield,
+                    char* font,
+                    char* text,
+                    int text_length,
+                    int x,
+                    int y,
+                    int width,
+                    int height,
+                    int max_length,
+                    void (*draw)(struct Widget*, uint32_t*, int, int),
+                    void (*key_press)(struct Widget*, uint32_t state, int),
+                    void (*focus)(struct Widget*)
+                    )
 {
     init_default_textfield(textfield);
     init_font(textfield, font);
@@ -450,7 +466,9 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
         free(textfield);
         exit(1);
     }
-    init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield);
+    init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield, draw, key_press, focus);
+
+
     set_cursor_position(textfield, textfield->cursor_index);
 }
 
@@ -461,8 +479,11 @@ struct TextField* create_textfield(int x, int y, char font[], int width, int hei
         perror("Memory allocation failed");
         return NULL;
     }
-    init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length);
+    init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length, draw_textfield, key_press_textfield, focus_textfield);
 
+//    textfield->key_press = key_press_textfield;
+//    textfield->draw = draw_textfield;
+//    textfield->focus = focus_textfield;
     return textField;
 }
 
