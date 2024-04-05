@@ -348,30 +348,22 @@ void key_press_down(struct TextField* textfield)
 void key_press_return_key(struct TextField* textfield)
 {
     if( insert_char(textfield, '\n', textfield->cursor_index) )
-    {
         shift_cursor_right(textfield);
-        force_cursor_state(textfield, 1);
-    }
+    force_cursor_state(textfield, 1);
 }
 
 void key_press_backspace_key(struct TextField* textfield)
 {
 
     if( remove_char(textfield, textfield->cursor_index-1) )
-    {   
-        textfield->cursor_index -= 1;
-        set_cursor_position(textfield, textfield->cursor_index);
-        force_cursor_state(textfield, 1);
-    } 
+        set_cursor_position(textfield, --textfield->cursor_index);
+    force_cursor_state(textfield, 1);
 }
 
 void key_press_left_key(struct TextField* textfield)
 {
     if(textfield->cursor_index > 0)
-    {
-        textfield->cursor_index -= 1;
-        set_cursor_position(textfield, textfield->cursor_index);
-    }
+        set_cursor_position(textfield, --textfield->cursor_index);
     force_cursor_state(textfield, 1);
 }
 
