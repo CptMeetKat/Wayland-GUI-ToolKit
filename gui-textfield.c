@@ -65,31 +65,31 @@ static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int 
 {
     int hSteps = widget->width;
     int vSteps = widget->height;
-    int cursor = 0; 
+    int pos = 0; 
 
     for(int i = 0; i < vSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x, widget->y + i))
             continue;
-        cursor = widget->x + (w_width * (widget->y + i)); 
-        data[cursor] = 0xFFFF0000;
+        pos = widget->x + (w_width * (widget->y + i)); 
+        data[pos] = 0xFFFF0000;
     }
 
-    cursor = widget->x + (w_width * widget->y);
+    pos = widget->x + (w_width * widget->y);
     for(int i = 0; i < hSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + i ,widget->y))
             continue;
-        cursor = widget->x + i + (w_width * widget->y );
-        data[cursor] = 0xFFFF0000;
+        pos = widget->x + i + (w_width * widget->y );
+        data[pos] = 0xFFFF0000;
     }
 
     for(int i = 0; i < vSteps; i++)
     {
         if( ! in_window(w_width, w_height, widget->x + widget->width, widget->y + i))
             continue;
-        cursor = widget->x + widget->width + (w_width * (i + widget->y));
-        data[cursor] = 0xFFFF0000;
+        pos = widget->x + widget->width + (w_width * (i + widget->y));
+        data[pos] = 0xFFFF0000;
     }
 
     
@@ -97,8 +97,8 @@ static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int 
     {
         if( ! in_window(w_width, w_height, widget->x + i ,widget->y + widget->height))
             continue;
-        cursor = (widget->x + i) + (w_width * (widget->height + widget->y));
-        data[cursor] = 0xFFFF0000;
+        pos = (widget->x + i) + (w_width * (widget->height + widget->y));
+        data[pos] = 0xFFFF0000;
     }
 }
 
