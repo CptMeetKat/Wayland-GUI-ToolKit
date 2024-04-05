@@ -14,7 +14,7 @@
 #include "time.h"
 
 
-void add_letter_length_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter);
+void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter);
 void shift_cursor_right(struct TextField* textfield);
                         
 void text_release_font(struct TextField* textfield)
@@ -160,19 +160,16 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
 
 void set_cursor_position(struct TextField* textfield, int index)
 {
-    int x = textfield->base->x;
-    int y = textfield->base->y;
-    int line = 0;
+    struct Cursor c;
+    cursor_init(&c, textfield->base->x, textfield->base->y, index, 0);
 
     for(int i = 0; i < index; i++)
     {
         char letter = gb_get(&(textfield->gb), i);
-        add_letter_length_to_cursor(textfield, &x, &y, &line, letter);
+        add_letter_length_to_cursor(textfield, &c, letter);
     }
 
-    textfield->cursor.x = x;
-    textfield->cursor.y = y;
-    textfield->cursor.line = line;
+    textfield->cursor = c;
 }
 
 void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height)
@@ -273,30 +270,21 @@ void key_press_up(struct TextField* textfield)
     }
 }
 
-
-void add_letter_length_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter)
-{//Consider stripping textfield from here, by providing base arguments, and face
-
+void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter)
+{
     FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
     FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
     if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
         return;
 
-    if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + (*cursor_x) > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+    if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + (cursor->x) > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
     {
-        *cursor_y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
-        (*line)++;
-        *cursor_x = textfield->base->x;
+        cursor->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
+        (cursor->line)++;
+        cursor->x = textfield->base->x;
     }
     if(letter != '\n')
-        *cursor_x += textfield->face->glyph->advance.x >> 6;
-
-}
-
-
-void add_letter_length_to_cursor_wrap(struct TextField* textfield, struct Cursor* cursor, char letter)
-{
-    add_letter_length_to_cursor(textfield, &(cursor->x), &(cursor->y), &(cursor->line), letter);
+        cursor->x += textfield->face->glyph->advance.x >> 6;
 }
 
 
@@ -319,7 +307,7 @@ void key_press_down(struct TextField* textfield)
 
         struct Cursor backtrack_cursor = current_cursor;
     
-        add_letter_length_to_cursor_wrap(textfield, &current_cursor, letter);
+        add_letter_length_to_cursor(textfield, &current_cursor, letter);
         current_cursor.index++;
 
         if(current_cursor.line > textfield->cursor.line+1) //track backwards if we jumped multiple liens 
@@ -350,7 +338,7 @@ void key_press_backspace_key(struct TextField* textfield)
 void key_press_left_key(struct TextField* textfield)
 {
     if(textfield->cursor.index > 0)
-        set_cursor_position(textfield, --textfield->cursor.index);
+        set_cursor_position(textfield, textfield->cursor.index-1);
     force_cursor_state(textfield, 1);
 }
 
@@ -358,10 +346,8 @@ void key_press_left_key(struct TextField* textfield)
 void shift_cursor_right(struct TextField* textfield)
 {
         add_letter_length_to_cursor(textfield, 
-                             &(textfield->cursor.x), 
-                             &(textfield->cursor.y), 
-                             &(textfield->cursor.line), 
-                             gb_get(&(textfield->gb), textfield->cursor.index));
+                                    &(textfield->cursor),
+                                    gb_get(&(textfield->gb), textfield->cursor.index));
     textfield->cursor.index += 1; 
 }
 
