@@ -23,8 +23,7 @@ struct TextField
 
     struct GapBuffer gb;
 
-    
-    FT_Library library; //Low key dosent make sense to keep rendering this
+    FT_Library library;
     FT_Face face;
 };
 

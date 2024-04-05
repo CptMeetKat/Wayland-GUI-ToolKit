@@ -131,10 +131,10 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
 }
 
 void focus_textfield(struct Widget* widget)
-{//Not sure if this is necessary, may be able to just move to init
-
-    struct TextField* textfield = widget->child;
+{    
     widget->isFocused = 1;
+    struct TextField* textfield = widget->child;
+
     time_t timer;
     time(&timer);
     textfield->last_blink = timer;
@@ -183,7 +183,6 @@ void set_cursor_position(struct TextField* textfield, int index)
     textfield->cursor_x = x;
     textfield->cursor_y = y;
     textfield->cursor_line = line;
-   
 }
 
 void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height)
@@ -407,9 +406,6 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
 
 void init_default_textfield(struct TextField* textfield)
 {
-//    textfield->key_press = key_press_textfield;
-//    textfield->draw = draw_textfield;
-//    textfield->focus = focus_textfield;
     textfield->cursor_x = 0;
     textfield->cursor_y = 0;
     textfield->cursor_index = 0;
@@ -417,7 +413,6 @@ void init_default_textfield(struct TextField* textfield)
     textfield->cursor_visible = 0;
     textfield->cursor_line = 0;
     textfield->base = NULL;
-
 
     strcpy(textfield->font, "");
     gb_gap_buffer_default(&(textfield->gb));
@@ -466,10 +461,7 @@ void init_textfield(struct TextField* textfield,
         free(textfield);
         exit(1);
     }
-    //init_widget(textfield->base, x, y, height, width, TEXTBOX, textfield, draw, key_press, focus);
     init_widget(textfield->base, x, y, height, width, textfield, draw, key_press, focus);
-
-
     set_cursor_position(textfield, textfield->cursor_index);
 }
 
@@ -481,11 +473,6 @@ struct TextField* create_textfield(int x, int y, char font[], int width, int hei
         return NULL;
     }
     init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length, draw_textfield, key_press_textfield, focus_textfield);
-
-//    textfield->key_press = key_press_textfield;
-//    textfield->draw = draw_textfield;
-//    textfield->focus = focus_textfield;
     return textField;
 }
-
 
