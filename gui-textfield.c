@@ -375,29 +375,29 @@ void key_press_left_key(struct TextField* textfield)
     }
 }
 
-//void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter)
-void key_press_right_key(struct TextField* textfield)
+void shift_cursor_right(struct TextField* textfield)
 {
-    if(textfield->cursor_index <= textfield->gb.size-1)
-    {
         textfield->cursor_index += 1;
         add_letter_to_cursor(textfield, 
                              &(textfield->cursor_x), 
                              &(textfield->cursor_y), 
                              &(textfield->cursor_line), 
                              gb_get(&(textfield->gb), textfield->cursor_index-1));
+}
 
+void key_press_right_key(struct TextField* textfield)
+{
+    if(textfield->cursor_index <= textfield->gb.size-1)
+    {
+        shift_cursor_right(textfield);
         force_cursor_state(textfield, 1);
     }
 }
 
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
-    if(insert_char(textfield, sym, textfield->cursor_index) )
-    {
-        textfield->cursor_index += 1;
-        set_cursor_position(textfield, textfield->cursor_index);
-    }
+    if(insert_char(textfield, sym, textfield->cursor_index))
+        shift_cursor_right(textfield);
     force_cursor_state(textfield, 1);
 }
 
