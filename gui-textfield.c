@@ -16,7 +16,8 @@
 
 
 void add_letter_length_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter);
-
+void shift_cursor_right(struct TextField* textfield);
+                        
 void text_release_font(struct TextField* textfield)
 {
     FT_Done_Face(textfield->face);
@@ -348,8 +349,7 @@ void key_press_return_key(struct TextField* textfield)
 {
     if( insert_char(textfield, '\n', textfield->cursor_index) )
     {
-        textfield->cursor_index += 1;
-        set_cursor_position(textfield, textfield->cursor_index);
+        shift_cursor_right(textfield);
         force_cursor_state(textfield, 1);
     }
 }
