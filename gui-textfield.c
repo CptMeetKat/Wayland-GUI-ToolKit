@@ -14,6 +14,9 @@
 #include "time.h"
 
 
+
+void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter, int LINE_SPACEING);
+
 void text_release_font(struct TextField* textfield)
 {
     FT_Done_Face(textfield->face);
@@ -165,19 +168,22 @@ void set_cursor_position(struct TextField* textfield, int index)
     for(int i = 0; i < index; i++)
     {
         char letter = gb_get(&(textfield->gb), i);
-        FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
-        FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
-        if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
-            break;
+    
+        add_letter_to_cursor(textfield, &x, &y, &line, letter, LINE_SPACEING);
+        //
+       // FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
+       // FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
+       // if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
+       //     break;
 
-        if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
-        {
-            y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
-            line++;
-            x = textfield->base->x;
-        }
-        if(letter != '\n')
-            x += textfield->face->glyph->advance.x >> 6;
+       // if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+       // {
+       //     y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
+       //     line++;
+       //     x = textfield->base->x;
+       // }
+       // if(letter != '\n')
+       //     x += textfield->face->glyph->advance.x >> 6;
     }
 
     textfield->cursor_x = x;
@@ -287,36 +293,93 @@ void key_press_up(struct TextField* textfield)
 }
 
 
+//void key_press_down(struct TextField* textfield)
+//{
+//
+//    if(textfield->cursor_line < textfield->total_lines) 
+//    {
+//        int current_cursor_x = textfield->cursor_x;
+//        int current_cursor_y = textfield->cursor_y;
+//        int current_cursor_index = textfield->cursor_index;
+//        int current_line = textfield->cursor_line;
+//
+//        while(textfield->cursor_x < current_cursor_x || 
+//            textfield->cursor_y <= current_cursor_y && 
+//            textfield->cursor_index >= current_cursor_index)
+//        {
+//            textfield->cursor_index++;
+//            set_cursor_position(textfield, textfield->cursor_index);
+//            if(textfield->cursor_index > textfield->gb.size-1)
+//            {
+//                textfield->cursor_index = textfield->gb.size;
+//                break;
+//            }
+//            if(textfield->cursor_line > current_line+1)
+//            {
+//                textfield->cursor_index--;
+//                set_cursor_position(textfield, textfield->cursor_index);
+//                break;
+//            }
+//        }
+//        force_cursor_state(textfield, 1);
+//    }
+//}
+//
+//
+
+//Textfild may be able to be ac
+void add_letter_to_cursor(struct TextField* textfield, int* cursor_x, int* cursor_y, int* line, char letter, int LINE_SPACEING)
+{//Consider stripping textfield from here
+
+    FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
+    FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
+    if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
+        return;
+
+    if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + (*cursor_x) > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+    {
+        *cursor_y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
+        (*line)++;
+        *cursor_x = textfield->base->x;
+    }
+    if(letter != '\n')
+        *cursor_x += textfield->face->glyph->advance.x >> 6;
+
+}
+
 void key_press_down(struct TextField* textfield)
 {
 
-    if(textfield->cursor_line < textfield->total_lines) 
-    {
-        int current_cursor_x = textfield->cursor_x;
-        int current_cursor_y = textfield->cursor_y;
-        int current_cursor_index = textfield->cursor_index;
-        int current_line = textfield->cursor_line;
+    if(textfield->cursor_line >= textfield->total_lines) // do nothing if on last line
+        return;
 
-        while(textfield->cursor_x < current_cursor_x || 
-            textfield->cursor_y <= current_cursor_y && 
-            textfield->cursor_index >= current_cursor_index)
+    int current_cursor_x = textfield->cursor_x;
+    int current_cursor_y = textfield->cursor_y;
+    int current_cursor_index = textfield->cursor_index;
+    int current_line = textfield->cursor_line;
+
+    while(textfield->cursor_x < current_cursor_x || 
+        textfield->cursor_y <= current_cursor_y && 
+        textfield->cursor_index >= current_cursor_index)
+    {
+
+
+
+        textfield->cursor_index++;
+        set_cursor_position(textfield, textfield->cursor_index);
+        if(textfield->cursor_index > textfield->gb.size-1) // End when cursor reaches the last position
         {
-            textfield->cursor_index++;
-            set_cursor_position(textfield, textfield->cursor_index);
-            if(textfield->cursor_index > textfield->gb.size-1)
-            {
-                textfield->cursor_index = textfield->gb.size;
-                break;
-            }
-            if(textfield->cursor_line > current_line+1)
-            {
-                textfield->cursor_index--;
-                set_cursor_position(textfield, textfield->cursor_index);
-                break;
-            }
+            textfield->cursor_index = textfield->gb.size;
+            break;
         }
-        force_cursor_state(textfield, 1);
+        if(textfield->cursor_line > current_line+1) //End 
+        {
+            textfield->cursor_index--;
+            set_cursor_position(textfield, textfield->cursor_index);
+            break;
+        }
     }
+    force_cursor_state(textfield, 1);
 }
 
 void key_press_return_key(struct TextField* textfield)
