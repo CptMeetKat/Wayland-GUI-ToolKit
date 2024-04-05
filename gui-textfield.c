@@ -313,7 +313,7 @@ void key_press_down(struct TextField* textfield)
         current_cursor.y <= textfield->cursor.y )
     {
 
-        if(current_cursor.index+1 > textfield->gb.size-1) // End when cursor reaches the last position
+        if(current_cursor.index > textfield->gb.size-1) // End when cursor reaches the last position
             break;
 
         char letter = gb_get(&(textfield->gb), current_cursor.index);
