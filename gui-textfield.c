@@ -270,6 +270,13 @@ void key_press_up(struct TextField* textfield)
     }
 }
 
+int get_character_width(struct TextField* textfield, char letter)
+{
+    FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
+    FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
+    return textfield->face->glyph->advance.x >> 6;
+}
+
 void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter)
 {
     FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
@@ -296,7 +303,9 @@ void key_press_down(struct TextField* textfield)
 
     struct Cursor current_cursor = textfield->cursor;
 
-    while(current_cursor.x < textfield->cursor.x || 
+    int t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+
+    while(current_cursor.x + (t/2) < textfield->cursor.x   || 
         current_cursor.y <= textfield->cursor.y )
     {
 
@@ -315,6 +324,8 @@ void key_press_down(struct TextField* textfield)
             current_cursor = backtrack_cursor;
             break;
         }
+        t = get_character_width(textfield, gb_get(&(textfield->gb), current_cursor.index)) ;
+
     }
     textfield->cursor = current_cursor;
     force_cursor_state(textfield, 1);
