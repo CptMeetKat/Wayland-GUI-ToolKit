@@ -18,11 +18,6 @@ struct TextField
     
     struct Cursor cursor;
 
-//    int cursor_x;
-//    int cursor_y;
-//    int cursor_index;
-//    int cursor_line;
-
     long int last_blink;
     int font_height;
     int total_lines;
