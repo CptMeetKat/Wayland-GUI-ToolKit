@@ -306,8 +306,7 @@ void key_press_down(struct TextField* textfield)
     if(textfield->cursor.line >= textfield->total_lines) // do nothing if on last line
         return;
 
-    struct Cursor current_cursor; //this should just be a copy no init
-    cursor_init(&(current_cursor), textfield->cursor.x, textfield->cursor.y, textfield->cursor.index, textfield->cursor.line); 
+    struct Cursor current_cursor = textfield->cursor;
 
     while(current_cursor.x < textfield->cursor.x || 
         current_cursor.y <= textfield->cursor.y )
@@ -318,8 +317,7 @@ void key_press_down(struct TextField* textfield)
 
         char letter = gb_get(&(textfield->gb), current_cursor.index);
 
-        struct Cursor backtrack_cursor;
-        backtrack_cursor = current_cursor;
+        struct Cursor backtrack_cursor = current_cursor;
     
         add_letter_length_to_cursor_wrap(textfield, &current_cursor, letter);
         current_cursor.index++;
