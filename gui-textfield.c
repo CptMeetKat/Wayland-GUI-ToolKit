@@ -316,8 +316,6 @@ void key_press_down(struct TextField* textfield)
             break;
 
         char letter = gb_get(&(textfield->gb), current_cursor_index);
-        printf("____%c\n", letter);
-
 
         int backtrack_x = current_cursor_x; //back to be replaced by another cursor struct OR a step back function
         int backtrack_y = current_cursor_y;
