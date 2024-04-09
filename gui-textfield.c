@@ -85,20 +85,20 @@ static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int 
         data[pos] = 0xFFFF0000;
     }
 
-    for(int i = 0; i < vSteps; i++)
+   for(int i = 0; i < vSteps; i++)
     {
-        if( ! in_window(w_width, w_height, widget->x + widget->width, widget->y + i))
+        if( ! in_window(w_width, w_height, widget->x + widget->width-1, widget->y + i))
             continue;
-        pos = widget->x + widget->width + (w_width * (i + widget->y));
+        pos = widget->x + widget->width-1 + (w_width * (i + widget->y));
         data[pos] = 0xFFFF0000;
     }
 
     
     for(int i = 0; i < hSteps; i++)
     {
-        if( ! in_window(w_width, w_height, widget->x + i ,widget->y + widget->height))
+        if( ! in_window(w_width, w_height, widget->x + i ,widget->y + widget->height-1))
             continue;
-        pos = (widget->x + i) + (w_width * (widget->height + widget->y));
+        pos = (widget->x + i) + (w_width * (widget->height + widget->y-1));
         data[pos] = 0xFFFF0000;
     }
 }

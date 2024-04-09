@@ -279,9 +279,9 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
         struct Widget* widget = state->components[i];
         wl_surface_damage_buffer(state->wl_surface, widget->x, widget->y, widget->width, widget->height);
     }
-        
-	wl_surface_commit(state->wl_surface);
 
+    wl_surface_commit(state->wl_surface);
+        
 	state->last_frame = time_complete;
 }
 
@@ -739,9 +739,10 @@ int main(int argc, char *argv[])
     struct client_state state = { 0 };
     init_surface(&state, 640, 480);
 
-    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(300, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
+    registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
+    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
+    //registerComponent(&state, create_textfield(400, 220, "DejaVuSerif.ttf", 2, 100, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
