@@ -420,10 +420,7 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
 
 void init_default_textfield(struct TextField* textfield)
 {
-    textfield->cursor.x = 0;
-    textfield->cursor.y = 0;
-    textfield->cursor.index = 0;
-    textfield->cursor.line = 0;
+    cursor_default(&(textfield->cursor));
     
     textfield->cursor_visible = 0;
 

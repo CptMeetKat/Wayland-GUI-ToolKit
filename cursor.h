@@ -13,5 +13,5 @@ struct Cursor
 
 
 void cursor_init(struct Cursor* cursor, int x, int y, int index, int line);
-
+void cursor_default(struct Cursor* cursor);
 #endif 
