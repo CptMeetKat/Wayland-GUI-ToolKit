@@ -3,6 +3,7 @@
 #define GUI_TEXTFIELD_H  
 #define MAX_FONT 64 
 #define LINE_SPACEING 0
+#define MAX_WRAPS 256
 #include <stdint.h>
 #include "gap_buffer.h"
 #include <ft2build.h>
@@ -26,6 +27,9 @@ struct TextField
 
     FT_Library library;
     FT_Face face;
+
+    int wrap_positions[MAX_WRAPS];
+    int total_wraps; 
 };
 
 

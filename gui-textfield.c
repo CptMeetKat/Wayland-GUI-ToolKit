@@ -117,13 +117,13 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
 
     for (int y = 0; y < face->glyph->bitmap.rows; y++) 
     {
-        if(! in_widget(widget, widget->x, y + yOffset + base_line_offset))
-            break;
 
         for (int x = 0; x < face->glyph->bitmap.width; x++) 
         {
-            if(!in_window(w_width, w_height, x+xOffset, y+yOffset + base_line_offset))
-                break;
+            if(! in_widget(widget, xOffset, y + yOffset + base_line_offset)) //need to reassess the need of placeing this here
+                continue;
+            if(!in_window(w_width, w_height, x+xOffset, y+yOffset + base_line_offset)) //need to reassess the need of placeing this here
+                continue;
 
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
                 data[((y+yOffset + base_line_offset )*w_width)+x+xOffset] = 0xFFFFFFFF; //white
@@ -194,6 +194,16 @@ void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height
     }
 }
 
+int is_word_wrap_position(struct TextField* textfield, int position)
+{
+    for(int i = 0; i < textfield->total_wraps; i++)
+    {
+        if(position == textfield->wrap_positions[i])
+            return 1;
+    }
+    return 0;
+}
+
 void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
     struct TextField* t = (struct TextField*)widget->child;
@@ -213,7 +223,8 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
         if((t->face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        if(letter == '\n' || (t->face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
+        //if(letter == '\n' || (t->face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
+        if(letter == '\n' || is_word_wrap_position(t, i)) //if newline or next character will go past edge
         {
             yOffset += (t->face->size->metrics.height >> 6) + LINE_SPACEING;
             xOffset = widget->x;
@@ -239,16 +250,55 @@ static void force_cursor_state(struct TextField* textfield, int state)
     textfield->last_blink = timer+1;
 }
 
+void printWraps(struct TextField* t)
+{
+    printf("\n");
+    for(int i = 0; i < t->total_wraps; i++)
+    {
+       printf("%d ", t->wrap_positions[i]); 
+    }
+    printf("\n");
+}
 
+static void generate_wrap_format_array(struct TextField* textfield)
+{
+    int total_wraps = 0;
+    
+    int currentX = 0;
+    for(int i = 0; i < textfield->gb.size; i++)
+    {
+        char letter = get_char(textfield, i);
+        currentX += get_character_width(textfield, letter);
+        if(  ! in_widget(textfield->base, currentX + textfield->base->x, textfield->base->y) ) 
+        {
+            textfield->wrap_positions[total_wraps++] = i;
+            currentX = get_character_width(textfield, letter);
+        }
+    }
+
+    textfield->total_wraps = total_wraps;
+    printWraps(textfield);
+
+}
 
 static int insert_char(struct TextField* textfield, char new_char, int position)
 {
-    return gb_insert(&(textfield->gb), new_char, position);
+    int result = gb_insert(&(textfield->gb), new_char, position);
+    if(result)
+    {
+        generate_wrap_format_array(textfield);
+    }
+    return result;
 }
 
 int remove_char(struct TextField* textfield, int position)
 {
-    return gb_remove(&(textfield->gb), position);
+    int result = gb_remove(&(textfield->gb), position);
+    if(result)
+    {
+        generate_wrap_format_array(textfield);
+    }
+    return result;
 }
 
 char get_char(struct TextField* textfield, int position)
@@ -292,7 +342,8 @@ void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cur
     if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
         return;
 
-    if(letter == '\n' || (textfield->face->glyph->advance.x >> 6) + (cursor->x) > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
+    if(letter == '\n' || 
+        (textfield->face->glyph->advance.x >> 6) + cursor->x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
     {
         cursor->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
         (cursor->line)++;
@@ -326,6 +377,9 @@ void key_press_down(struct TextField* textfield)
     
         add_letter_length_to_cursor(textfield, &current_cursor, letter);
         current_cursor.index++;
+
+        //IF the next letter wraps, then move cursor to next line
+        //  MOVE TO START OF NEXT LINE
 
         if(current_cursor.line > textfield->cursor.line+1) //track backwards if we jumped multiple liens 
         {
@@ -429,6 +483,7 @@ void init_default_textfield(struct TextField* textfield)
 
     strcpy(textfield->font, "");
     gb_gap_buffer_default(&(textfield->gb));
+    textfield->total_wraps = 0;
 
 }
 
@@ -475,6 +530,7 @@ void init_textfield(struct TextField* textfield,
         exit(1);
     }
     init_widget(textfield->base, x, y, height, width, textfield, draw, key_press, focus);
+    generate_wrap_format_array(textfield);
     set_cursor_position(textfield, textfield->cursor.index);
 }
 
