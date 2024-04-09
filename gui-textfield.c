@@ -150,7 +150,7 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
 {
     for( int i = 0; i < height; i++)
     {
-        if(! in_widget(widget, widget->x, y + i))
+        if(! in_widget(widget, x, y + i))
            break;
 
         if(!in_window(w_width, w_height, x, y+i))
