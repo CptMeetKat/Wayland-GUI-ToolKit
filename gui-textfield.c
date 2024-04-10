@@ -235,7 +235,6 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
         if((t->face->glyph->advance.x >> 6) > widget->width) //Characters are too wide for the width, then dont display anything
             break;
 
-        //if(letter == '\n' || (t->face->glyph->advance.x >> 6) + xOffset > widget->x + widget->width) //if newline or next character will go past edge
         if(letter == '\n' || is_word_wrap_position(t, i)) //if newline or next character will go past edge
         {
             yOffset += (t->face->size->metrics.height >> 6) + LINE_SPACEING;
@@ -300,7 +299,6 @@ static int insert_char(struct TextField* textfield, char new_char, int position)
 
     if(result)
         generate_wrap_format_array(textfield);
-//    printf("%d %d %d %d\n", textfield->cursor.x, textfield->cursor.y, textfield->cursor.line, textfield->cursor.index);
     return result;
 }
 
