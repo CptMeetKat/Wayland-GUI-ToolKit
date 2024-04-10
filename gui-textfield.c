@@ -6,7 +6,7 @@
 #define RIGHT_ARROW_KEY 65363
 #define DOWN_ARROW_KEY 65364
 #define UP_ARROW_KEY 65362
-
+#define CURSOR_WIDTH 1
 
 #include "gui-textfield.h"
 #include "gui-widget.h"
@@ -276,12 +276,11 @@ static void generate_wrap_format_array(struct TextField* textfield)
     int total_wraps = 0;
     
     int currentX = 0;
-    int cursor_width_const = 1;
     for(int i = 0; i < textfield->gb.size; i++)
     {
         char letter = get_char(textfield, i);
         currentX += get_character_width(textfield, letter);
-        if(  ! in_widget(textfield->base, currentX + textfield->base->x + cursor_width_const , textfield->base->y) ) 
+        if(  ! in_widget(textfield->base, currentX + textfield->base->x + CURSOR_WIDTH, textfield->base->y) ) 
         {
             textfield->wrap_positions[total_wraps++] = i;
             currentX = get_character_width(textfield, letter);
@@ -430,8 +429,7 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
     //Investigate - bad seperation of concerns here, which means this section above can go in if statement
     if(char_width > textfield->base->width) //Characters are too wide for the width, then dont display anything
         return;
-    int cursor_width_const = 1; //There exists edge case where letter will move to next line but cursor wont due due not account for cursor width
-    if(cursor->x+char_width + cursor_width_const > textfield->base->x + textfield->base->width)
+    if(cursor->x+char_width + CURSOR_WIDTH > textfield->base->x + textfield->base->width)
     {
 
         cursor_to_start_of_line(textfield, cursor);
