@@ -21,7 +21,7 @@ struct TextField
 
     long int last_blink;
     int font_height;
-    int total_lines;
+    int last_line;
 
     struct GapBuffer gb;
 
