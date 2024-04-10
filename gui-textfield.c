@@ -151,11 +151,11 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
 {
     for( int i = 0; i < height; i++)
     {
-        if(! in_widget(widget, x, y + i))
-           break;
+     //   if(! in_widget(widget, x, y + i))
+     //      break;
 
-        if(!in_window(w_width, w_height, x, y+i))
-            break;
+     //   if(!in_window(w_width, w_height, x, y+i))
+     //       break;
 
         data[w_width * (i + y) + x] = 0xFF00FF00; 
     }
@@ -168,9 +168,11 @@ void cursor_to_start_of_line(struct TextField* textfield, struct Cursor* c)
 
 void add_row_to_cursor(struct TextField* textfield, struct Cursor* c)
 {
+
+    printf("______LINE: %d\n", textfield->last_line);
     if(c->line < textfield->last_line) //This feels very wrong total lines seems to indicate last line
     {
-        printf("___%d %d\n", c->line, textfield->last_line);
+        printf("TEST___%d %d\n", c->line, textfield->last_line);
         c->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
         c->line++;
     }
@@ -183,8 +185,15 @@ void set_cursor_position(struct TextField* textfield, int index)
 
     for(int i = 0; i < index; i++)
     {
+        if(is_word_wrap_position(textfield, i))
+        {
+            cursor_to_start_of_line(textfield, &c);
+            add_row_to_cursor(textfield, &c);
+        }
         char letter = get_char(textfield, i);
-        add_letter_length_to_cursor(textfield, &c, letter);
+        c.x += get_character_width(textfield,letter);
+        
+//        add_letter_length_to_cursor(textfield, &c, letter);
     }
 
     textfield->cursor = c;
@@ -351,27 +360,113 @@ int get_character_width(struct TextField* textfield, char letter)
     return textfield->face->glyph->advance.x >> 6;
 }
 
+int find_first_char_position_in_line(struct TextField* textfield, int line)
+{
+    int first_character = 0;
+    int current_line = 0;
+
+    for(int i = 0; i < textfield->gb.size; i++)
+    {
+        char letter = get_char(textfield, i);
+        if(letter == '\n')
+            current_line++;
+        if(is_word_wrap_position(textfield, i))
+            current_line++;
+
+        if(current_line == line)
+        {
+            first_character = i;
+            break;
+        }
+    }
+
+    return first_character;
+}
+
+
+int find_last_char_position_in_line(struct TextField* textfield, int line)
+{
+    int first_character = find_first_char_position_in_line(textfield, line);
+    int last_character = 0;
+
+
+    for(int i = first_character+1; i < textfield->gb.size; i++)
+    {
+        if(get_char(textfield, i) == '\n' || is_word_wrap_position(textfield, i))
+        {
+            break;
+        }
+        last_character = i;
+    }
+
+
+
+
+    return last_character;
+}
+
+void cursor_to_end_of_line(struct TextField* textfield, int line)
+{
+//    c->x = textfield->base->x + textfield->base->width;
+    int first_pos = find_first_char_position_in_line(textfield, line);
+    int last_pos = find_last_char_position_in_line(textfield, line);
+    printf("first_pos_in_line: %d\nlast_pos_in_line: %d\n", first_pos, last_pos);
+    textfield->cursor.x = textfield->base->x;
+    for(int i = first_pos; i <= last_pos; i++)
+    {
+        textfield->cursor.x += get_character_width(textfield, get_char(textfield, i));
+    }
+}
+
+void remove_row_to_cursor(struct TextField* textfield, struct Cursor* c)
+{
+    if(c->line > 0) 
+    {
+        c->y -= (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
+        c->line--;
+    }
+}
+
+void remove_letter_length_to_cursor(struct TextField* textfield,
+                                    struct Cursor* cursor,
+                                    char letter)
+{
+    int char_width = get_character_width(textfield, letter);
+
+    if( is_word_wrap_position(textfield, cursor->index) )
+    {
+        cursor_to_end_of_line(textfield, cursor->line-1);
+        remove_row_to_cursor(textfield, &(textfield->cursor));
+    }
+    cursor->x -= char_width;
+    cursor->index--;
+}
+
+
 void add_letter_length_to_cursor(struct TextField* textfield, struct Cursor* cursor, char letter)
 {
+
     FT_Load_Char(textfield->face, letter, FT_LOAD_RENDER);
-    FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); 
+    FT_Render_Glyph( textfield->face->glyph, FT_RENDER_MODE_NORMAL ); //remove for get chracter_width functino
+
+    //Investigate - bad seperation of concerns here, which means this section above can go in if statement
     if((textfield->face->glyph->advance.x >> 6) > textfield->base->width) //Characters are too wide for the width, then dont display anything
+    {
+        printf("EDGE CASE\n");
         return;
+    }
 
     if(letter == '\n' || 
         is_word_wrap_position(textfield, textfield->cursor.index+1))
-//        (textfield->face->glyph->advance.x >> 6) + cursor->x > textfield->base->x + textfield->base->width) //if newline or next character will go past edge
     {
-
+        printf("I need to see this....!\n");
         cursor_to_start_of_line(textfield, &(textfield->cursor));
         add_row_to_cursor(textfield, &(textfield->cursor));
-
-//        cursor->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
-//        (cursor->line)++;
-//        cursor->x = textfield->base->x;
     }
-    if(letter != '\n')
+    else
+    {
         cursor->x += textfield->face->glyph->advance.x >> 6;
+    }
 }
 
 
@@ -423,17 +518,28 @@ void key_press_return_key(struct TextField* textfield)
 
 void key_press_backspace_key(struct TextField* textfield)
 {
-
     if( remove_char(textfield, textfield->cursor.index-1) )
         set_cursor_position(textfield, --textfield->cursor.index);
     force_cursor_state(textfield, 1);
 }
 
+void shift_cursor_left(struct TextField* textfield)
+{
+    struct Cursor* c = &(textfield->cursor);
+    if(c->index <= 0)
+        return;
+
+    char letter = get_char(textfield, textfield->cursor.index-1);
+    remove_letter_length_to_cursor(textfield, &(textfield->cursor), letter); 
+}
+
 void key_press_left_key(struct TextField* textfield)
 {
     if(textfield->cursor.index > 0)
-        set_cursor_position(textfield, textfield->cursor.index-1);
+//        set_cursor_position(textfield, textfield->cursor.index-1);
+        shift_cursor_left(textfield);
     force_cursor_state(textfield, 1);
+    printf("left: index %d\n", textfield->cursor.index);
 }
 
 
@@ -459,6 +565,7 @@ void key_press_right_key(struct TextField* textfield)
     if(textfield->cursor.index <= textfield->gb.size-1)
             shift_cursor_right(textfield);
     force_cursor_state(textfield, 1);
+    printf("right: index %d\n", textfield->cursor.index);
 }
 
 void key_press_ascii_key(struct TextField* textfield, int sym)
@@ -489,10 +596,10 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
             key_press_right_key(textfield);
             break;
         case DOWN_ARROW_KEY:
-            key_press_down(textfield);
+            //key_press_down(textfield);
             break;
         case UP_ARROW_KEY:
-            key_press_up(textfield);
+            //key_press_up(textfield);
             break;
     default:
         if(sym >= ASCII_MIN && sym <= ASCII_MAX)
@@ -561,6 +668,16 @@ void init_textfield(struct TextField* textfield,
     }
     init_widget(textfield->base, x, y, height, width, textfield, draw, key_press, focus);
     generate_wrap_format_array(textfield);
+
+    for(int i = 0; i < textfield->gb.size; i++)
+    {
+        if(get_char(textfield, i) == '\n')
+            textfield->last_line++;
+    }
+
+    textfield->last_line += textfield->total_wraps;
+    printf("LASTLINE: %d\n", textfield->last_line);
+    
     set_cursor_position(textfield, textfield->cursor.index);
 }
 
