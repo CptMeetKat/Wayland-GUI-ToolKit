@@ -502,7 +502,7 @@ void key_press_down(struct TextField* textfield)
 void key_press_return_key(struct TextField* textfield)
 {
     if( insert_char(textfield, '\n', textfield->cursor.index) )
-        shift_cursor_right(textfield);
+        set_cursor_position(textfield, ++textfield->cursor.index);
     force_cursor_state(textfield, 1);
 }
 
@@ -546,7 +546,7 @@ void key_press_right_key(struct TextField* textfield)
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
     if(insert_char(textfield, sym, textfield->cursor.index))
-        shift_cursor_right(textfield);
+        set_cursor_position(textfield, ++textfield->cursor.index);
     force_cursor_state(textfield, 1);
 }
 
