@@ -263,7 +263,7 @@ static void force_cursor_state(struct TextField* textfield, int state)
 
 void printWraps(struct TextField* t)
 {
-    printf("\n");
+    printf("Printing Wraps:\n");
     for(int i = 0; i < t->total_wraps; i++)
     {
        printf("%d ", t->wrap_positions[i]); 
@@ -280,7 +280,11 @@ static void generate_wrap_format_array(struct TextField* textfield)
     {
         char letter = get_char(textfield, i);
         currentX += get_character_width(textfield, letter);
-        if(  ! in_widget(textfield->base, currentX + textfield->base->x + CURSOR_WIDTH, textfield->base->y) ) 
+        if(letter == '\n')
+        {
+            currentX = 0;
+        }
+        else if(  ! in_widget(textfield->base, currentX + textfield->base->x + CURSOR_WIDTH, textfield->base->y) ) 
         {
             textfield->wrap_positions[total_wraps++] = i;
             currentX = get_character_width(textfield, letter);
@@ -289,7 +293,6 @@ static void generate_wrap_format_array(struct TextField* textfield)
 
     textfield->total_wraps = total_wraps;
     printWraps(textfield);
-
 }
 
 static int insert_char(struct TextField* textfield, char new_char, int position)
@@ -412,14 +415,23 @@ void remove_letter_length_to_cursor(struct TextField* textfield,
 {
     int char_width = get_character_width(textfield, letter);
 
-    if( is_word_wrap_position(textfield, cursor->index) )
+    if( is_word_wrap_position(textfield, cursor->index))
+    {
+        cursor_to_end_of_line(textfield, cursor->line-1);
+        decrease_cursor_row(textfield, &(textfield->cursor));
+    cursor->x -= char_width;
+    }
+    else if( letter == '\n' )
     {
         cursor_to_end_of_line(textfield, cursor->line-1);
         decrease_cursor_row(textfield, &(textfield->cursor));
     }
-    cursor->x -= char_width;
+    else
+    {
+        cursor->x -= char_width;
+    }
     cursor->index--;
-}
+    }
 
 
 
@@ -429,21 +441,22 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
     //Investigate - bad seperation of concerns here, which means this section above can go in if statement
     if(char_width > textfield->base->width) //Characters are too wide for the width, then dont display anything
         return;
-    if(cursor->x+char_width + CURSOR_WIDTH > textfield->base->x + textfield->base->width)
-    {
 
-        cursor_to_start_of_line(textfield, cursor);
-        move_cursor_down(textfield, cursor);
-        cursor->x += textfield->face->glyph->advance.x >> 6;
-    }
-    else if(letter == '\n' || 
+    if(letter == '\n' || 
         is_word_wrap_position(textfield, cursor->index+1))
     {
+        
         cursor_to_start_of_line(textfield, cursor);
         move_cursor_down(textfield, cursor);
     }
-    else
+    else if(cursor->x+char_width + CURSOR_WIDTH > textfield->base->x + textfield->base->width)
+    {
+                cursor_to_start_of_line(textfield, cursor);
+        move_cursor_down(textfield, cursor);
         cursor->x += textfield->face->glyph->advance.x >> 6;
+    }
+    else
+            cursor->x += textfield->face->glyph->advance.x >> 6;
     cursor->index += 1; 
 }
 
@@ -461,19 +474,13 @@ void key_press_down(struct TextField* textfield)
     while(current_cursor.x + tolerance < textfield->cursor.x   || 
         current_cursor.y <= textfield->cursor.y )
     {
-
         if(current_cursor.index > textfield->gb.size-1) // End when cursor reaches the last position
             break;
 
-        char letter = get_char(textfield, current_cursor.index);
-
         struct Cursor backtrack_cursor = current_cursor;
-    
-        add_letter_to_cursor(textfield, &current_cursor, letter);
-        current_cursor.index++;
 
-        //IF the next letter wraps, then move cursor to next line
-        //  MOVE TO START OF NEXT LINE
+        char letter = get_char(textfield, current_cursor.index);
+        add_letter_to_cursor(textfield, &current_cursor, letter);
 
         if(current_cursor.line > textfield->cursor.line+1) //track backwards if we jumped multiple liens 
         {
@@ -534,8 +541,8 @@ void key_press_right_key(struct TextField* textfield)
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
     if(insert_char(textfield, sym, textfield->cursor.index))
-            shift_cursor_right(textfield);
-        force_cursor_state(textfield, 1);
+        shift_cursor_right(textfield);
+    force_cursor_state(textfield, 1);
 }
 
 
@@ -559,7 +566,7 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
             key_press_right_key(textfield);
             break;
         case DOWN_ARROW_KEY:
-            //key_press_down(textfield);
+            key_press_down(textfield);
             break;
         case UP_ARROW_KEY:
             //key_press_up(textfield);
