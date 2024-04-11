@@ -137,7 +137,7 @@ void focus_textfield(struct Widget* widget)
 
     time_t timer;
     time(&timer);
-    textfield->last_blink = timer;
+    textfield->cursor.last_blink = timer;
 }
 
 
@@ -187,10 +187,10 @@ void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height
         time_t timer;
         time(&timer);
 
-        if(t->last_blink < timer)
+        if(t->cursor.last_blink < timer)
         {
             toggle_cursor(&(t->cursor));
-            t->last_blink = timer;
+            t->cursor.last_blink = timer;
         } 
         if(t->cursor.cursor_visible) 
             draw_cursor(widget, t->cursor.x, t->cursor.y, t->font_height, data, w_width, w_height);
@@ -244,13 +244,6 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
     draw_focus(widget, data, w_width, w_height);
 }
 
-static void force_cursor_state(struct TextField* textfield, int state)
-{
-    textfield->cursor.cursor_visible = 1;
-    time_t timer;
-    time(&timer);
-    textfield->last_blink = timer+1;
-}
 
 static void generate_wrap_format_array(struct TextField* textfield)
 {
@@ -317,7 +310,8 @@ void key_press_up(struct TextField* textfield)
             set_cursor_position(textfield, textfield->cursor.index);
             tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
         }
-        force_cursor_state(textfield, 1);
+//        force_cursor_state(textfield, 1);
+        cursor_force_show(&(textfield->cursor));
     }
 }
 
@@ -383,21 +377,22 @@ void key_press_down(struct TextField* textfield)
 
     }
     textfield->cursor = current_cursor;
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
+
 }
 
 void key_press_return_key(struct TextField* textfield)
 {
     if( insert_char(textfield, '\n', textfield->cursor.index) )
         set_cursor_position(textfield, ++textfield->cursor.index);
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
 }
 
 void key_press_backspace_key(struct TextField* textfield)
 {
     if( remove_char(textfield, textfield->cursor.index-1) )
         set_cursor_position(textfield, --textfield->cursor.index);
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
 }
 
 void shift_cursor_left(struct TextField* textfield)
@@ -410,7 +405,7 @@ void shift_cursor_left(struct TextField* textfield)
 void key_press_left_key(struct TextField* textfield)
 {
     shift_cursor_left(textfield);
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
 }
 
 
@@ -426,14 +421,14 @@ void shift_cursor_right(struct TextField* textfield)
 void key_press_right_key(struct TextField* textfield)
 {
     shift_cursor_right(textfield);
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
 }
 
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
     if(insert_char(textfield, sym, textfield->cursor.index))
         set_cursor_position(textfield, ++textfield->cursor.index);
-    force_cursor_state(textfield, 1);
+    cursor_force_show(&(textfield->cursor));
 }
 
 void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
@@ -472,7 +467,6 @@ void init_default_textfield(struct TextField* textfield)
 {
     cursor_default(&(textfield->cursor));
 
-    textfield->last_blink = 0;
     textfield->base = NULL;
 
     strcpy(textfield->font, "");

@@ -18,7 +18,7 @@ struct TextField
     
     struct Cursor cursor;
 
-    long int last_blink;
+//    long int last_blink;
     int font_height;
     int last_line;
 
