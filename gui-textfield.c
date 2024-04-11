@@ -152,11 +152,11 @@ void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data
 {
     for( int i = 0; i < height; i++)
     {
-        if(! in_widget(widget, x, y + i))
-           break;
+if(! in_widget(widget, x, y + i))
+break;
 
         if(!in_window(w_width, w_height, x, y+i))
-            break;
+break;
 
         data[w_width * (i + y) + x] = 0xFF00FF00; 
     }
@@ -355,14 +355,25 @@ int find_first_position_in_line(struct TextField* textfield, int line)
 
     for(int i = 0; i < textfield->gb.size; i++)
     {
-        if(get_char(textfield, i) == '\n' || is_word_wrap_position(textfield, i))
-            current_line++;
-
-        if(current_line == line)
+        if(get_char(textfield, i) == '\n')
         {
-            first_character = i;
-            break;
+            current_line++;
+            if(current_line == line)
+            {
+                first_character = i+1;
+                break;
+            }
         }
+        else if(is_word_wrap_position(textfield, i))
+        {
+            current_line++;
+            if(current_line == line)
+            {
+                first_character = i;
+                break;
+            }
+        }
+
     }
 
     return first_character;
@@ -388,7 +399,7 @@ void cursor_to_end_of_line(struct TextField* textfield, int line)
 {
     int first_pos = find_first_position_in_line(textfield, line);
     int last_pos = find_last_char_position_in_line(textfield, line);
-
+    
     struct Cursor cursor = textfield->cursor;
 
     cursor.x = textfield->base->x;
@@ -413,15 +424,9 @@ void remove_letter_length_to_cursor(struct TextField* textfield,
                                     struct Cursor* cursor,
                                     char letter)
 {
-    int char_width = get_character_width(textfield, letter);
+        int char_width = get_character_width(textfield, letter);
 
-    if( is_word_wrap_position(textfield, cursor->index))
-    {
-        cursor_to_end_of_line(textfield, cursor->line-1);
-        decrease_cursor_row(textfield, &(textfield->cursor));
-    cursor->x -= char_width;
-    }
-    else if( letter == '\n' )
+    if( letter == '\n' || is_word_wrap_position(textfield, cursor->index))
     {
         cursor_to_end_of_line(textfield, cursor->line-1);
         decrease_cursor_row(textfield, &(textfield->cursor));
@@ -431,7 +436,7 @@ void remove_letter_length_to_cursor(struct TextField* textfield,
         cursor->x -= char_width;
     }
     cursor->index--;
-    }
+}
 
 
 
