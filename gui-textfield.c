@@ -169,8 +169,8 @@ void cursor_to_start_of_line(struct TextField* textfield, struct Cursor* c)
 
 void move_cursor_down(struct TextField* textfield, struct Cursor* c)
 {
-        c->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
-        c->line++;
+    c->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
+    c->line++;
 }
 
 void set_cursor_position(struct TextField* textfield, int index)
@@ -345,7 +345,6 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
     if(letter == '\n' || 
         is_word_wrap_position(textfield, cursor->index+1))
     {
-        
         cursor_to_start_of_line(textfield, cursor);
         move_cursor_down(textfield, cursor);
     }
@@ -356,7 +355,7 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
         cursor->x += textfield->face->glyph->advance.x >> 6;
     }
     else
-            cursor->x += textfield->face->glyph->advance.x >> 6;
+        cursor->x += textfield->face->glyph->advance.x >> 6;
     cursor->index += 1; 
 }
 
@@ -444,7 +443,6 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
     force_cursor_state(textfield, 1);
 }
 
-
 void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
 {
     struct TextField* textfield = widget->child;
@@ -475,7 +473,6 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
                 key_press_ascii_key(textfield, sym);
     }
 } 
-
 
 
 void init_default_textfield(struct TextField* textfield)
