@@ -569,7 +569,7 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
             key_press_down(textfield);
             break;
         case UP_ARROW_KEY:
-            //key_press_up(textfield);
+            key_press_up(textfield);
             break;
     default:
         if(sym >= ASCII_MIN && sym <= ASCII_MAX)
