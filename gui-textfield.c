@@ -310,7 +310,6 @@ void key_press_up(struct TextField* textfield)
             set_cursor_position(textfield, textfield->cursor.index);
             tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
         }
-//        force_cursor_state(textfield, 1);
         cursor_force_show(&(textfield->cursor));
     }
 }
