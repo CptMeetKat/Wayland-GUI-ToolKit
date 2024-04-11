@@ -56,13 +56,6 @@ static int in_window(int w_width, int w_height, int x, int y)
     return 0;
 }
 
-void toggle_cursor(struct TextField* t)
-{
-    if(t->cursor_visible)
-        t->cursor_visible = 0;
-    else
-        t->cursor_visible = 1;
-}
 
 static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int w_height)
 {
@@ -196,10 +189,10 @@ void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height
 
         if(t->last_blink < timer)
         {
-            toggle_cursor(t);
+            toggle_cursor(&(t->cursor));
             t->last_blink = timer;
         } 
-        if(t->cursor_visible) 
+        if(t->cursor.cursor_visible) 
             draw_cursor(widget, t->cursor.x, t->cursor.y, t->font_height, data, w_width, w_height);
     }
 }
@@ -253,7 +246,7 @@ void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_he
 
 static void force_cursor_state(struct TextField* textfield, int state)
 {
-    textfield->cursor_visible = 1;
+    textfield->cursor.cursor_visible = 1;
     time_t timer;
     time(&timer);
     textfield->last_blink = timer+1;
@@ -478,8 +471,6 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
 void init_default_textfield(struct TextField* textfield)
 {
     cursor_default(&(textfield->cursor));
-    
-    textfield->cursor_visible = 0;
 
     textfield->last_blink = 0;
     textfield->base = NULL;

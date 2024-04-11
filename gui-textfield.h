@@ -15,7 +15,6 @@ struct TextField
     struct Widget *base;
     char font[MAX_FONT]; 
     
-    int cursor_visible;
     
     struct Cursor cursor;
 
@@ -37,7 +36,6 @@ void key_press_textfield(struct Widget* widget, uint32_t state, int sym);
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height);
 void focus_textfield(struct Widget* widget);
 
-void toggle_cursor(struct TextField* textfield);
 void release_textfield(struct TextField* textfield);
 
 void init_default_textfield(struct TextField* textfield);
