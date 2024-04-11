@@ -40,3 +40,12 @@ void cursor_force_show(struct Cursor* cursor)
     time(&timer);
     cursor->last_blink = timer+1;
 }
+
+
+void cursor_set_last_blink(struct Cursor* cursor)
+{
+    time_t timer;
+    time(&timer);
+    cursor->last_blink = timer;
+}
+

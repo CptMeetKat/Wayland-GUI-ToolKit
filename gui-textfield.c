@@ -134,24 +134,34 @@ void focus_textfield(struct Widget* widget)
 {    
     widget->isFocused = 1;
     struct TextField* textfield = widget->child;
-
-    time_t timer;
-    time(&timer);
-    textfield->cursor.last_blink = timer;
+    cursor_set_last_blink((&textfield->cursor) );
 }
 
 
 void draw_cursor(struct Widget* widget, int x, int y, int height, uint32_t *data, int w_width, int w_height)
 {
-    for( int i = 0; i < height; i++)
+    struct TextField* t = (struct TextField*)widget->child;
+    time_t timer;
+    time(&timer);
+
+    if(t->cursor.last_blink < timer)
     {
-        if(! in_widget(widget, x, y + i))
-            break;
+        toggle_cursor(&(t->cursor));
+        t->cursor.last_blink = timer;
+    } 
 
-        if(!in_window(w_width, w_height, x, y+i))
-            break;
+    if(t->cursor.cursor_visible) 
+    {
+        for( int i = 0; i < height; i++)
+        {
+            if(! in_widget(widget, x, y + i))
+                break;
 
-        data[w_width * (i + y) + x] = 0xFF00FF00; 
+            if(!in_window(w_width, w_height, x, y+i))
+                break;
+
+            data[w_width * (i + y) + x] = 0xFF00FF00; 
+        }
     }
 }
 
@@ -183,17 +193,7 @@ void draw_focus(struct Widget* widget, uint32_t* data, int w_width, int w_height
     {
         struct TextField* t = (struct TextField*)widget->child;
         draw_border(widget,data,w_width,w_height);
-
-        time_t timer;
-        time(&timer);
-
-        if(t->cursor.last_blink < timer)
-        {
-            toggle_cursor(&(t->cursor));
-            t->cursor.last_blink = timer;
-        } 
-        if(t->cursor.cursor_visible) 
-            draw_cursor(widget, t->cursor.x, t->cursor.y, t->font_height, data, w_width, w_height);
+        draw_cursor(widget, t->cursor.x, t->cursor.y, t->font_height, data, w_width, w_height);
     }
 }
 
