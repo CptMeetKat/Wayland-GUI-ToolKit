@@ -278,6 +278,7 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
     {
         struct Widget* widget = state->components[i];
         wl_surface_damage_buffer(state->wl_surface, widget->x, widget->y, widget->width, widget->height);
+//        wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
     }
 
     wl_surface_commit(state->wl_surface);
@@ -292,72 +293,72 @@ static const struct wl_callback_listener wl_surface_frame_listener = {
 static void
 wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 {
-       struct client_state *client_state = data;
-       struct pointer_event *event = &client_state->pointer_event;
-       fprintf(stderr, "pointer frame @ %d: ", event->time);
-
-       if (event->event_mask & POINTER_EVENT_ENTER) {
-               fprintf(stderr, "entered %f, %f ",
-                               wl_fixed_to_double(event->surface_x),
-                               wl_fixed_to_double(event->surface_y));
-       }
-
-       if (event->event_mask & POINTER_EVENT_LEAVE) {
-               fprintf(stderr, "leave");
-       }
-
-       if (event->event_mask & POINTER_EVENT_MOTION) {
-               fprintf(stderr, "motion %f, %f ",
-                               wl_fixed_to_double(event->surface_x),
-                               wl_fixed_to_double(event->surface_y));
-       }
-
-       if (event->event_mask & POINTER_EVENT_BUTTON) {
-               char *state = event->state == WL_POINTER_BUTTON_STATE_RELEASED ?
-                       "released" : "pressed";
-               fprintf(stderr, "button %d %s ", event->button, state);
-       }
-
-       uint32_t axis_events = POINTER_EVENT_AXIS
-               | POINTER_EVENT_AXIS_SOURCE
-               | POINTER_EVENT_AXIS_STOP
-               | POINTER_EVENT_AXIS_DISCRETE;
-       char *axis_name[2] = {
-               [WL_POINTER_AXIS_VERTICAL_SCROLL] = "vertical",
-               [WL_POINTER_AXIS_HORIZONTAL_SCROLL] = "horizontal",
-       };
-       char *axis_source[4] = {
-               [WL_POINTER_AXIS_SOURCE_WHEEL] = "wheel",
-               [WL_POINTER_AXIS_SOURCE_FINGER] = "finger",
-               [WL_POINTER_AXIS_SOURCE_CONTINUOUS] = "continuous",
-               [WL_POINTER_AXIS_SOURCE_WHEEL_TILT] = "wheel tilt",
-       };
-       if (event->event_mask & axis_events) {
-               for (size_t i = 0; i < 2; ++i) {
-                       if (!event->axes[i].valid) {
-                               continue;
-                       }
-                       fprintf(stderr, "%s axis ", axis_name[i]);
-                       if (event->event_mask & POINTER_EVENT_AXIS) {
-                               fprintf(stderr, "value %f ", wl_fixed_to_double(
-                                                       event->axes[i].value));
-                       }
-                       if (event->event_mask & POINTER_EVENT_AXIS_DISCRETE) {
-                               fprintf(stderr, "discrete %d ",
-                                               event->axes[i].discrete);
-                       }
-                       if (event->event_mask & POINTER_EVENT_AXIS_SOURCE) {
-                               fprintf(stderr, "via %s ",
-                                               axis_source[event->axis_source]);
-                       }
-                       if (event->event_mask & POINTER_EVENT_AXIS_STOP) {
-                               fprintf(stderr, "(stopped) ");
-                       }
-               }
-       }
-
-       fprintf(stderr, "\n");
-       memset(event, 0, sizeof(*event));
+//       struct client_state *client_state = data;
+//       struct pointer_event *event = &client_state->pointer_event;
+//       fprintf(stderr, "pointer frame @ %d: ", event->time);
+//
+//       if (event->event_mask & POINTER_EVENT_ENTER) {
+//               fprintf(stderr, "entered %f, %f ",
+//                               wl_fixed_to_double(event->surface_x),
+//                               wl_fixed_to_double(event->surface_y));
+//       }
+//
+//       if (event->event_mask & POINTER_EVENT_LEAVE) {
+//               fprintf(stderr, "leave");
+//       }
+//
+//       if (event->event_mask & POINTER_EVENT_MOTION) {
+//               fprintf(stderr, "motion %f, %f ",
+//                               wl_fixed_to_double(event->surface_x),
+//                               wl_fixed_to_double(event->surface_y));
+//       }
+//
+//       if (event->event_mask & POINTER_EVENT_BUTTON) {
+//               char *state = event->state == WL_POINTER_BUTTON_STATE_RELEASED ?
+//                       "released" : "pressed";
+//               fprintf(stderr, "button %d %s ", event->button, state);
+//       }
+//
+//       uint32_t axis_events = POINTER_EVENT_AXIS
+//               | POINTER_EVENT_AXIS_SOURCE
+//               | POINTER_EVENT_AXIS_STOP
+//               | POINTER_EVENT_AXIS_DISCRETE;
+//       char *axis_name[2] = {
+//               [WL_POINTER_AXIS_VERTICAL_SCROLL] = "vertical",
+//               [WL_POINTER_AXIS_HORIZONTAL_SCROLL] = "horizontal",
+//       };
+//       char *axis_source[4] = {
+//               [WL_POINTER_AXIS_SOURCE_WHEEL] = "wheel",
+//               [WL_POINTER_AXIS_SOURCE_FINGER] = "finger",
+//               [WL_POINTER_AXIS_SOURCE_CONTINUOUS] = "continuous",
+//               [WL_POINTER_AXIS_SOURCE_WHEEL_TILT] = "wheel tilt",
+//       };
+//       if (event->event_mask & axis_events) {
+//               for (size_t i = 0; i < 2; ++i) {
+//                       if (!event->axes[i].valid) {
+//                               continue;
+//                       }
+//                       fprintf(stderr, "%s axis ", axis_name[i]);
+//                       if (event->event_mask & POINTER_EVENT_AXIS) {
+//                               fprintf(stderr, "value %f ", wl_fixed_to_double(
+//                                                       event->axes[i].value));
+//                       }
+//                       if (event->event_mask & POINTER_EVENT_AXIS_DISCRETE) {
+//                               fprintf(stderr, "discrete %d ",
+//                                               event->axes[i].discrete);
+//                       }
+//                       if (event->event_mask & POINTER_EVENT_AXIS_SOURCE) {
+//                               fprintf(stderr, "via %s ",
+//                                               axis_source[event->axis_source]);
+//                       }
+//                       if (event->event_mask & POINTER_EVENT_AXIS_STOP) {
+//                               fprintf(stderr, "(stopped) ");
+//                       }
+//               }
+//       }
+//
+//       fprintf(stderr, "\n");
+//       memset(event, 0, sizeof(*event));
 }
 
 static void
@@ -504,7 +505,7 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
     xkb_keysym_get_name(sym, buf, sizeof(buf));
     const char *action =
         key_state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
-    fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
+//    fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
     xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                            buf, sizeof(buf));
     int sym_code = (int)sym; //Investigate if this conversion in necessary, feel unnecessary
@@ -741,7 +742,8 @@ int main(int argc, char *argv[])
 
 //    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
     registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
-    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
+    registerComponent(&state, create_textfield(350, 80, "DejaVuSerif.ttf", 200, 220, "", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
     //registerComponent(&state, create_textfield(400, 220, "DejaVuSerif.ttf", 2, 100, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
