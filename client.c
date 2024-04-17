@@ -128,6 +128,8 @@ struct client_state {
     int last_key_action;
     int last_key_time;
     int last_key;
+
+    int modifier;
 };
 
 
@@ -265,7 +267,7 @@ wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time_complete
     {
 
         handle_key_input(state, state->last_key, state->last_key_action);
-       state->focused->key_press(state->focused, state->last_key_action, (int)state->last_key);
+        state->focused->key_press(state->focused, state->last_key_action, state->modifier, (int)state->last_key);
     }
 
 
@@ -483,14 +485,31 @@ static void cycle_focus_backward(struct client_state *state)
     next->focus(next);
 }
 
+
+int is_modifer_key(int sym_code)
+{
+    int white_list[] = {65507};
+    int total_white_list = 1;
+
+    for(int i = 0; i < total_white_list; i++)
+        if(white_list[i] == sym_code)
+            return true;
+
+    return false;
+}
+
 static void handle_key_input(struct client_state* state, int sym_code, enum wl_keyboard_key_state key_state) 
 {
     if(sym_code == 65289 && key_state == WL_KEYBOARD_KEY_STATE_PRESSED) //TAB
         cycle_focus_forward(state);
     else if(sym_code == 65056 && key_state == WL_KEYBOARD_KEY_STATE_PRESSED) //reverse TAB
         cycle_focus_backward(state);
+    else if(is_modifer_key(sym_code) && key_state == WL_KEYBOARD_KEY_STATE_PRESSED) 
+        state->modifier = sym_code;
+    else if(is_modifer_key(sym_code) && key_state == WL_KEYBOARD_KEY_STATE_RELEASED)  
+        state->modifier = -1;
     else if(state->focused != NULL)
-        state->focused->key_press(state->focused, key_state, sym_code);
+        state->focused->key_press(state->focused, key_state, state->modifier, sym_code);
 } 
 
 static void
@@ -500,12 +519,11 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
     struct client_state *client_state = data;
     char buf[128];
     uint32_t keycode = key + 8;
-    xkb_keysym_t sym = xkb_state_key_get_one_sym(
-        client_state->xkb_state, keycode);
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(client_state->xkb_state, keycode);
     xkb_keysym_get_name(sym, buf, sizeof(buf));
     const char *action =
         key_state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
-//    fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
+    fprintf(stderr, "key %s: sym: %-12s (%d), ", action, buf, sym);
     xkb_state_key_get_utf8(client_state->xkb_state, keycode,
                            buf, sizeof(buf));
     int sym_code = (int)sym; //Investigate if this conversion in necessary, feel unnecessary
@@ -517,7 +535,6 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
     handle_key_input(client_state, sym_code, key_state);
 
     fprintf(stderr, "utf8: '%s'\n", buf);
-
 }
 
 static void
@@ -715,6 +732,9 @@ void init_surface(struct client_state* state, int width, int height)
     state->total_components = 0;
     state->focused = NULL;
 
+    state->modifier = -1;
+
+
 
     state->wl_display = wl_display_connect(NULL);
     state->wl_registry = wl_display_get_registry(state->wl_display);
@@ -740,9 +760,9 @@ int main(int argc, char *argv[])
     struct client_state state = { 0 };
     init_surface(&state, 640, 480);
 
-//    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
-    registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
-    registerComponent(&state, create_textfield(350, 80, "DejaVuSerif.ttf", 200, 220, "", BUFFER_SIZE)->base);
+    registerComponent(&state, create_textfield(10, 10,"DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
+//    registerComponent(&state, create_textfield(350, 80, "DejaVuSerif.ttf", 200, 220, "", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
     //registerComponent(&state, create_textfield(400, 220, "DejaVuSerif.ttf", 2, 100, "aW", BUFFER_SIZE)->base);
 //    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);

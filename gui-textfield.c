@@ -6,6 +6,7 @@
 #define RIGHT_ARROW_KEY 65363
 #define DOWN_ARROW_KEY 65364
 #define UP_ARROW_KEY 65362
+#define L_CONTROL 65507
 #define CURSOR_WIDTH 1
 
 #include "gui-textfield.h"
@@ -430,36 +431,56 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
     cursor_force_show(&(textfield->cursor));
 }
 
-void key_press_textfield(struct Widget* widget, uint32_t state, int sym)
+
+void undo(struct Widget* widget)
+{
+    printf("___UNDO!\n");
+}
+
+void handle_modifier_key_press(struct Widget* widget, uint32_t state, int modifier, int sym)
+{
+    if(modifier == L_CONTROL && sym == 'z')
+         undo(widget); 
+}
+
+void key_press_textfield(struct Widget* widget, uint32_t state, int modifier, int sym)
 {
     struct TextField* textfield = widget->child;
     if(state != WL_KEYBOARD_KEY_STATE_PRESSED)
         return;
 
-    switch(sym) {
-        case RETURN_KEY:
-            key_press_return_key(textfield);
-            break;
-        case BACKSPACE_KEY:
-            key_press_backspace_key(textfield);
-            break;
-        case LEFT_ARROW_KEY:
-            key_press_left_key(textfield);
-            break;
-        case RIGHT_ARROW_KEY:
-            key_press_right_key(textfield);
-            break;
-        case DOWN_ARROW_KEY:
-            key_press_down(textfield);
-            break;
-        case UP_ARROW_KEY:
-            key_press_up(textfield);
-            break;
-    default:
-        if(sym >= ASCII_MIN && sym <= ASCII_MAX)
-                key_press_ascii_key(textfield, sym);
+    if(modifier != -1)
+    {
+        handle_modifier_key_press(widget, state, modifier, sym);
+    }
+    else
+    {
+        switch(sym) {
+            case RETURN_KEY:
+                key_press_return_key(textfield);
+                break;
+            case BACKSPACE_KEY:
+                key_press_backspace_key(textfield);
+                break;
+            case LEFT_ARROW_KEY:
+                key_press_left_key(textfield);
+                break;
+            case RIGHT_ARROW_KEY:
+                key_press_right_key(textfield);
+                break;
+            case DOWN_ARROW_KEY:
+                key_press_down(textfield);
+                break;
+            case UP_ARROW_KEY:
+                key_press_up(textfield);
+                break;
+            default:
+                if(sym >= ASCII_MIN && sym <= ASCII_MAX)
+                    key_press_ascii_key(textfield, sym);
+        }
     }
 } 
+
 
 
 void init_default_textfield(struct TextField* textfield)
@@ -499,7 +520,7 @@ void init_textfield(struct TextField* textfield,
                     int height,
                     int max_length,
                     void (*draw)(struct Widget*, uint32_t*, int, int),
-                    void (*key_press)(struct Widget*, uint32_t state, int),
+                    void (*key_press)(struct Widget*, uint32_t state, int, int),
                     void (*focus)(struct Widget*)
                     )
 {

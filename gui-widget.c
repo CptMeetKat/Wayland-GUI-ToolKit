@@ -23,7 +23,7 @@ void init_widget(struct Widget* widget,
                  void* child,
 
                  void (*draw)(struct Widget*, uint32_t*, int, int),
-                 void (*key_press)(struct Widget*, uint32_t state, int),
+                 void (*key_press)(struct Widget*, uint32_t state, int, int),
                  void (*focus)(struct Widget*)
                   )
 {

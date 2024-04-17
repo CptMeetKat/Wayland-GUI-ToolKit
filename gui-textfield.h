@@ -32,7 +32,7 @@ struct TextField
 };
 
 
-void key_press_textfield(struct Widget* widget, uint32_t state, int sym);
+void key_press_textfield(struct Widget* widget, uint32_t state, int modifier, int sym);
 void draw_textfield(struct Widget* widget, uint32_t *data, int w_width, int w_height);
 void focus_textfield(struct Widget* widget);
 
@@ -41,7 +41,7 @@ void release_textfield(struct TextField* textfield);
 void init_default_textfield(struct TextField* textfield);
 void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length,
                     void (*draw)(struct Widget*, uint32_t*, int, int),
-                    void (*key_press)(struct Widget*, uint32_t state, int),
+                    void (*key_press)(struct Widget*, uint32_t state, int, int),
                     void (*focus)(struct Widget*)
                     );
 struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length);
