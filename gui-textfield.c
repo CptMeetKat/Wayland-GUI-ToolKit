@@ -32,6 +32,8 @@ void release_textfield(struct TextField* textfield)
 {
     gb_release(&(textfield->gb));
     text_release_font(textfield);
+    free(textfield->base);
+    free(textfield);
 }
 
 
@@ -269,7 +271,7 @@ static void generate_wrap_format_array(struct TextField* textfield)
     textfield->total_wraps = total_wraps;
 }
 
-static int insert_char(struct TextField* textfield, char new_char, int position)
+int insert_char(struct TextField* textfield, char new_char, int position)
 {
     int result = gb_insert(&(textfield->gb), new_char, position);
 

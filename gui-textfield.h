@@ -45,5 +45,6 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
                     void (*focus)(struct Widget*)
                     );
 struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length);
+int insert_char(struct TextField* textfield, char new_char, int position);
 
 #endif 
