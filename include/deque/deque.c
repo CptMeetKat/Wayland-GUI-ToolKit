@@ -2,6 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int dq_mod(int value, int mod)
+{//Does not work on big numbers yet (change to while)
+    int result = value;
+    if(value >= mod)
+        result = value % mod;
+    else if(value < 0)
+    {
+       result = value + mod;
+    }
+    return result;
+}
+
 int dq_get_total(struct Deque* deque)
 {
     if(deque->first == deque->last)
@@ -19,14 +31,15 @@ void* dq_dequeue(struct Deque* deque)
         return 0;
 
     void* head = deque->buffer[deque->first]; 
-    deque->buffer[deque->first] = 0; 
+    deque->buffer[deque->first] = 0;
     deque->first++;
+    deque->first = dq_mod(deque->first, deque->size);
     return head;
 }
 
 void dq_enqueue(struct Deque* deque, void* value)
 {
-    if(dq_get_total(deque) == deque->size)
+    if(dq_get_total(deque) >= deque->size)
     {
         printf("Warning: Deque is full\n");
         return;
@@ -34,6 +47,7 @@ void dq_enqueue(struct Deque* deque, void* value)
 
     deque->buffer[deque->last] = value;
     deque->last++;
+    deque->last = dq_mod(deque->last, deque->size);
 }
 
 void* dq_pop_tail(struct Deque* deque)
@@ -41,7 +55,7 @@ void* dq_pop_tail(struct Deque* deque)
     if(dq_get_total(deque) <= 0)
         return 0;
     deque->last--;
-
+    deque->last = dq_mod(deque->last, deque->size);
     void* tail = deque->buffer[deque->last];
     deque->buffer[deque->last] = 0;
 
