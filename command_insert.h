@@ -13,8 +13,8 @@ struct Command_Insert
 };
 
 
-void execute_insert(struct Command* c);
-void release_command_insert(struct Command* c);
+void cmd_insert_execute(struct Command* c);
+void cmd_insert_release(struct Command* c);
 struct Command_Insert* cmd_insert_create(struct TextField* textfield,
                          char new_char,
                          int position);
