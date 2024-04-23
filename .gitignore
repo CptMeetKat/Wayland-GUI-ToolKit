@@ -1,2 +1,3 @@
 include/gap_buffer/a.out
 client
+include/deque/a.out
