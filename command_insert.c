@@ -1,4 +1,5 @@
 #include "command_insert.h"
+#include "gui-textfield.h"
 
 void cmd_insert_release(struct Command* c)
 {
@@ -29,6 +30,7 @@ void cmd_insert_execute(struct Command* c)
 {
     struct Command_Insert * ci = c->child;
     insert_char(ci->textfield, ci->new_char, ci->position);
+    set_cursor_position(ci->textfield, ci->position+1);
 }
 
 
