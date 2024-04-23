@@ -31,7 +31,9 @@ void text_release_font(struct TextField* textfield)
 void release_textfield(struct TextField* textfield)
 {
     gb_release(&(textfield->gb));
+    history_release(&(textfield->history));
     text_release_font(textfield);
+
     free(textfield->base);
     free(textfield);
 }
@@ -529,7 +531,7 @@ void init_textfield(struct TextField* textfield,
     init_default_textfield(textfield);
     init_font(textfield, font);
     gb_gap_buffer_init(&(textfield->gb), max_length);
-
+    history_init(&(textfield->history));
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor.index = textfield->gb.size;
 

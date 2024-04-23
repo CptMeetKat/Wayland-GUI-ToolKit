@@ -9,6 +9,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "cursor.h"
+#include "history.h"
 
 struct TextField
 {
@@ -28,7 +29,9 @@ struct TextField
     FT_Face face;
 
     int wrap_positions[MAX_WRAPS];
-    int total_wraps; 
+    int total_wraps;
+
+    struct History history;
 };
 
 
