@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+cc deque.c test_deque.c
+
+if [ $? -eq 0 ]; then
+    ./a.out
+fi
+
