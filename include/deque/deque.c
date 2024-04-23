@@ -17,8 +17,11 @@ void* dq_dequeue(struct Deque* deque)
 {
     if(dq_get_total(deque) <= 0)
         return 0;
-        
-    return deque->buffer[deque->first++]; 
+
+    void* head = deque->buffer[deque->first]; 
+    deque->buffer[deque->first] = 0; 
+    deque->first++;
+    return head;
 }
 
 void dq_enqueue(struct Deque* deque, void* value)
@@ -38,7 +41,11 @@ void* dq_pop_tail(struct Deque* deque)
     if(dq_get_total(deque) <= 0)
         return 0;
     deque->last--;
-    return deque->buffer[deque->last]; 
+
+    void* tail = deque->buffer[deque->last];
+    deque->buffer[deque->last] = 0;
+
+    return tail;
 }
 
 
@@ -47,7 +54,10 @@ void dq_init(struct Deque* deque, int size)
     dq_default(deque);
     deque->buffer = (void*)malloc(size * sizeof(void*));
     deque->size = size;
+    for(int i = 0; i < deque->size; i++)
+        deque->buffer[i] = 0;
 }
+
 
 
 void dq_default(struct Deque* deque)
