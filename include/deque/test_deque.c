@@ -63,7 +63,7 @@ void dq_test_release_data(struct Deque* dq)
 
 int dq_test_enqueue()
 {
-    struct Deque dq; //put this away, each test should work without dependency
+    struct Deque dq; 
     dq_init(&dq, 10);
 
     dq_test_generate_data(&dq);
@@ -78,7 +78,7 @@ int dq_test_enqueue()
 
 int dq_test_dequeue()
 {
-    struct Deque dq; //put this away, each test should work without dependency
+    struct Deque dq; 
     dq_init(&dq, 10);
 
     int outcome = 0;
