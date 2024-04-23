@@ -7,7 +7,7 @@ void release_command_insert(struct Command* c)
     free(ci);
 }
 
-struct Command_Insert* init_cmd_insert(struct TextField* textfield,
+struct Command_Insert* cmd_insert_create(struct TextField* textfield,
                          char new_char,
                          int position)
 {
@@ -15,6 +15,7 @@ struct Command_Insert* init_cmd_insert(struct TextField* textfield,
         (struct Command_Insert*)malloc(sizeof(struct Command_Insert*));
     cmd_insert->new_char = new_char;
     cmd_insert->position = position;
+    cmd_insert->textfield = textfield;
 
     cmd_insert->base = (struct Command*)malloc(sizeof(struct Command*));
     cmd_insert->base->child = cmd_insert;
