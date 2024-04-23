@@ -28,8 +28,11 @@ void history_add(struct History* history, struct Command* command)
 void history_undo(struct History* history)
 {
     struct Command* last_action = dq_pop_tail(&(history->deque));
+    if(last_action == 0)
+        return;
     last_action->execute(last_action);
     last_action->release(last_action);
 }
+
 
 
