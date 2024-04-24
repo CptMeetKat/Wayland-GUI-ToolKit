@@ -152,7 +152,7 @@ void gb_set_text(struct GapBuffer* gb, char* text, int text_length)
     }
 }
 
-int gb_remove(struct GapBuffer *gb, int position)
+int gb_remove(struct GapBuffer *gb, int position, char* out)
 {
     if(gb->size <= 0)
     {
@@ -179,6 +179,7 @@ int gb_remove(struct GapBuffer *gb, int position)
             flip_right_to_left(gb);
     }
 
+    *out = gb->buffer_left[gb->next_left-1];
     gb->buffer_left[gb->next_left-1] = '\0';
     gb->next_left--;
     gb->size--;
