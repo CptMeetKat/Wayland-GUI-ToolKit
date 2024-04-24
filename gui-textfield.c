@@ -286,10 +286,15 @@ int insert_char(struct TextField* textfield, char new_char, int position)
 
 int remove_char(struct TextField* textfield, int position)
 {
-    int result = gb_remove(&(textfield->gb), position);
+    char removed_char = 0;
+    int result = gb_remove(&(textfield->gb), position, &removed_char);
     if(result)
     {
         generate_wrap_format_array(textfield);
+
+        struct Command_Insert* cmd = cmd_insert_create(textfield, removed_char, position);
+        history_add(&(textfield->history), cmd->base);
+
     }
     return result;
 }
@@ -439,8 +444,8 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
 
 void txt_test_add_command(struct TextField* txt)
 {
-    struct Command_Insert* cmd = cmd_insert_create(txt, 'T', 0);
-    history_add(&(txt->history), cmd->base);
+//    struct Command_Insert* cmd = cmd_insert_create(txt, 'T', 0);
+//    history_add(&(txt->history), cmd->base);
 }
 
 void undo(struct Widget* widget)
