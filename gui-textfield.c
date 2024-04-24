@@ -454,12 +454,6 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
     cursor_force_show(&(textfield->cursor));
 }
 
-void txt_test_add_command(struct TextField* txt)
-{
-//    struct Command_Insert* cmd = cmd_insert_create(txt, 'T', 0);
-//    history_add(&(txt->history), cmd->base);
-}
-
 void undo(struct Widget* widget)
 {
     struct TextField* textfield = widget->child;
@@ -558,7 +552,6 @@ void init_textfield(struct TextField* textfield,
     init_font(textfield, font);
     gb_gap_buffer_init(&(textfield->gb), max_length);
     history_init(&(textfield->history));
-    txt_test_add_command(textfield); //TEST CODE ONLY
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor.index = textfield->gb.size;
 
