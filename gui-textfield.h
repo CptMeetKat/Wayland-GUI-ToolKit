@@ -48,7 +48,8 @@ void init_textfield(struct TextField* textfield, char* font, char* text, int tex
                     void (*focus)(struct Widget*)
                     );
 struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length);
-int insert_char(struct TextField* textfield, char new_char, int position);
+int insert_char(struct TextField* textfield, char new_char, int position,int save_history);
+int remove_char(struct TextField* textfield, int position, int save_history);
 void set_cursor_position(struct TextField* textfield, int index);
 
 #endif 

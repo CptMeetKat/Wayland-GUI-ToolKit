@@ -10,6 +10,7 @@ cc -o client \
    command.c \
    command_insert.c \
    history.c \
+   command_remove.c \
    ./include/deque/deque.c \
    ./include/gap_buffer/gap_buffer.c \
    -lwayland-client \

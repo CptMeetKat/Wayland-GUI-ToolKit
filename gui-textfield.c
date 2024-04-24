@@ -1,4 +1,5 @@
 #include "command_insert.h"
+#include "command_remove.h"
 #include "history.h"
 #define ASCII_MIN 32
 #define ASCII_MAX 126
@@ -275,25 +276,36 @@ static void generate_wrap_format_array(struct TextField* textfield)
     textfield->total_wraps = total_wraps;
 }
 
-int insert_char(struct TextField* textfield, char new_char, int position)
+int insert_char(struct TextField* textfield, char new_char, int position, int save_history)
 {
     int result = gb_insert(&(textfield->gb), new_char, position);
 
     if(result)
+    {
         generate_wrap_format_array(textfield);
+
+        if(save_history)
+        {
+            struct Command_Remove* cmd = cmd_remove_create(textfield, new_char, position);
+            history_add(&(textfield->history), cmd->base);
+        }
+    }
     return result;
 }
 
-int remove_char(struct TextField* textfield, int position)
+int remove_char(struct TextField* textfield, int position, int save_history)
 {
     char removed_char = 0;
     int result = gb_remove(&(textfield->gb), position, &removed_char);
     if(result)
     {
         generate_wrap_format_array(textfield);
-
-        struct Command_Insert* cmd = cmd_insert_create(textfield, removed_char, position);
-        history_add(&(textfield->history), cmd->base);
+    
+        if(save_history)
+        {
+            struct Command_Insert* cmd = cmd_insert_create(textfield, removed_char, position);
+            history_add(&(textfield->history), cmd->base);
+        }
 
     }
     return result;
@@ -394,14 +406,14 @@ void key_press_down(struct TextField* textfield)
 
 void key_press_return_key(struct TextField* textfield)
 {
-    if( insert_char(textfield, '\n', textfield->cursor.index) )
+    if( insert_char(textfield, '\n', textfield->cursor.index, 1) )
         set_cursor_position(textfield, ++textfield->cursor.index);
     cursor_force_show(&(textfield->cursor));
 }
 
 void key_press_backspace_key(struct TextField* textfield)
 {
-    if( remove_char(textfield, textfield->cursor.index-1) )
+    if( remove_char(textfield, textfield->cursor.index-1, 1) )
         set_cursor_position(textfield, --textfield->cursor.index);
     cursor_force_show(&(textfield->cursor));
 }
@@ -437,7 +449,7 @@ void key_press_right_key(struct TextField* textfield)
 
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
-    if(insert_char(textfield, sym, textfield->cursor.index))
+    if(insert_char(textfield, sym, textfield->cursor.index, 1))
         set_cursor_position(textfield, ++textfield->cursor.index);
     cursor_force_show(&(textfield->cursor));
 }

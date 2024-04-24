@@ -29,7 +29,7 @@ struct Command_Insert* cmd_insert_create(struct TextField* textfield,
 void cmd_insert_execute(struct Command* c)
 {
     struct Command_Insert * ci = c->child;
-    insert_char(ci->textfield, ci->new_char, ci->position);
+    insert_char(ci->textfield, ci->new_char, ci->position, 0);
     set_cursor_position(ci->textfield, ci->position+1);
 }
 
