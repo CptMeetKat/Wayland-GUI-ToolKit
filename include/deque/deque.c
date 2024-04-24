@@ -16,13 +16,14 @@ static int dq_mod(int value, int mod)
 
 int dq_get_total(struct Deque* deque)
 {
-    if(deque->first == deque->last)
-       return 0;
-
-    if(deque->first < deque->last)
-        return deque->last - deque->first;
-    else
-        return deque->first - deque->last;
+//    if(deque->first == deque->last)
+//       return 0;
+//
+//    if(deque->first < deque->last)
+//        return deque->last + 1 - deque->first;
+//    else
+//        return deque->first - deque->last;
+    return deque->total;
 }
 
 void* dq_dequeue(struct Deque* deque)
@@ -34,6 +35,9 @@ void* dq_dequeue(struct Deque* deque)
     deque->buffer[deque->first] = 0;
     deque->first++;
     deque->first = dq_mod(deque->first, deque->size);
+
+    deque->total--;
+
     return head;
 }
 
@@ -48,6 +52,8 @@ void dq_enqueue(struct Deque* deque, void* value)
     deque->buffer[deque->last] = value;
     deque->last++;
     deque->last = dq_mod(deque->last, deque->size);
+
+    deque->total++;
 }
 
 void* dq_pop_tail(struct Deque* deque)
@@ -58,6 +64,8 @@ void* dq_pop_tail(struct Deque* deque)
     deque->last = dq_mod(deque->last, deque->size);
     void* tail = deque->buffer[deque->last];
     deque->buffer[deque->last] = 0;
+
+    deque->total--;
 
     return tail;
 }
@@ -80,6 +88,7 @@ void dq_default(struct Deque* deque)
     deque->size = 0;
     deque->first = 0;
     deque->last = 0;
+    deque->total = 0;
 }
 
 void dq_release(struct Deque* deque)

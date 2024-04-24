@@ -5,6 +5,7 @@ struct Deque
     int size;
     int first;
     int last;
+    int total;
 };
 
 void dq_init(struct Deque* deque, int size);
