@@ -457,7 +457,6 @@ void key_press_ascii_key(struct TextField* textfield, int sym)
 void undo(struct Widget* widget)
 {
     struct TextField* textfield = widget->child;
-    printf("___UNDO!\n");
     history_undo(&(textfield->history)); 
 }
 
