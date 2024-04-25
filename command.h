@@ -7,6 +7,7 @@ struct Command
     void* child;
     void (*execute)(struct Command* command);
     void (*release)(struct Command* command);
+    struct Command* (*invert)(struct Command* command);
 };
 
 

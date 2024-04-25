@@ -460,10 +460,19 @@ void undo(struct Widget* widget)
     history_undo(&(textfield->history)); 
 }
 
+void redo(struct Widget* widget)
+{
+    struct TextField* textfield = widget->child;
+    history_redo(&(textfield->history)); 
+}
+
 void handle_modifier_key_press(struct Widget* widget, uint32_t state, int modifier, int sym)
 {
     if(modifier == L_CONTROL && sym == 'z')
          undo(widget); 
+    else if(modifier == L_CONTROL && sym == 'y')
+         redo(widget);
+    
 }
 
 void key_press_textfield(struct Widget* widget, uint32_t state, int modifier, int sym)

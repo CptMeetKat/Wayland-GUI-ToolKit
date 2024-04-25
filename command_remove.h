@@ -18,4 +18,5 @@ void cmd_remove_release(struct Command* c);
 struct Command_Remove* cmd_remove_create(struct TextField* textfield,
                          char removed_char,
                          int position);
+struct Command* cmd_remove_invert(struct Command* command);
 #endif

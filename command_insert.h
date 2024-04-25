@@ -18,4 +18,5 @@ void cmd_insert_release(struct Command* c);
 struct Command_Insert* cmd_insert_create(struct TextField* textfield,
                          char new_char,
                          int position);
+struct Command* cmd_insert_invert(struct Command* command);
 #endif
