@@ -41,12 +41,12 @@ void* dq_dequeue(struct Deque* deque)
     return head;
 }
 
-void dq_enqueue(struct Deque* deque, void* value)
+int dq_enqueue(struct Deque* deque, void* value)
 {
     if(dq_get_total(deque) >= deque->size)
     {
         printf("Warning: Deque is full\n");
-        return;
+        return 0;
     }
 
     deque->buffer[deque->last] = value;
@@ -54,6 +54,7 @@ void dq_enqueue(struct Deque* deque, void* value)
     deque->last = dq_mod(deque->last, deque->size);
 
     deque->total++;
+    return 1;
 }
 
 void* dq_pop_tail(struct Deque* deque)
@@ -74,7 +75,8 @@ void* dq_pop_tail(struct Deque* deque)
 void dq_init(struct Deque* deque, int size)
 {
     dq_default(deque);
-    deque->buffer = (void*)malloc(size * sizeof(void*));
+
+    deque->buffer = malloc(size * sizeof(void*));
     deque->size = size;
     for(int i = 0; i < deque->size; i++)
         deque->buffer[i] = 0;

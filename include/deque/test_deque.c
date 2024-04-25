@@ -42,7 +42,8 @@ void add(struct Deque* deque, int value)
 {
     int *t = (int*)malloc(sizeof(int));
     *t = value;
-    dq_enqueue(deque, t);
+    if( !   dq_enqueue(deque, t))
+        free(t);
 }
 
 void dq_test_generate_data(struct Deque* dq)
@@ -121,29 +122,33 @@ int dq_test_pop_tail()
 
 int dq_test_dequeue_when_deque_empty()
 {
+    int result = 0;
     dq_total_tests++;
     struct Deque dq;
     dq_init(&dq, 10);
 
     if(dq_dequeue(&dq) == 0)
-       return 1; 
+       result = 1; 
     //VERIFY deque fields?
+    dq_test_release_data(&dq);
     dq_release(&dq);
-    return 0;
+    return result;
 }
 
 
 int dq_test_pop_tail_when_deque_empty()
 {
+    int result = 0;
     dq_total_tests++;
     struct Deque dq;
     dq_init(&dq, 10);
 
     if(dq_pop_tail(&dq) == 0)
-       return 1; 
+       result = 1; 
     //VERIFY deque fields?
+    dq_test_release_data(&dq);
     dq_release(&dq);
-    return 0;
+    return result;
 }
 
 int dq_test_enqueue_when_deque_full()

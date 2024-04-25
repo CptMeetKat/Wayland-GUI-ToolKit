@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+cc -g deque.c test_deque.c
+
+if [ $? -eq 0 ]; then
+  valgrind --leak-check=full --show-error-list=yes ./a.out
+fi
+
