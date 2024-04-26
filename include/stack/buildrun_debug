@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+cc -g stack.c test_stack.c
+
+if [ $? -eq 0 ]; then
+  valgrind --leak-check=full --show-error-list=yes ./a.out
+fi
+

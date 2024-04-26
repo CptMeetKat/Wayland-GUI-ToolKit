@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+cc stack.c test_stack.c
+
+if [ $? -eq 0 ]; then
+    ./a.out
+fi
+
