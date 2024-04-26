@@ -178,7 +178,7 @@ void cursor_to_start_of_line(struct TextField* textfield, struct Cursor* c)
     c->x = textfield->base->x;
 }
 
-void move_cursor_down(struct TextField* textfield, struct Cursor* c)
+void move_cursor_down_a_line(struct TextField* textfield, struct Cursor* c)
 {
     c->y += (textfield->face->size->metrics.height >> 6) + LINE_SPACEING;
     c->line++;
@@ -316,26 +316,48 @@ char get_char(struct TextField* textfield, int position)
     return gb_get(&(textfield->gb), position);
 }
 
-void key_press_up(struct TextField* textfield)
+void move_cursor_up(struct TextField* textfield)
 {
     //NAIVE Implementation: set_cursor_position recalculates the cursor position for each character change
-    if( textfield->cursor.y > textfield->base->y) //This will break if we added padding
+    struct Cursor current_cursor = textfield->cursor;
+    textfield->cursor.index--;
+    set_cursor_position(textfield, textfield->cursor.index);
+
+    int tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
+    while(textfield->cursor.x > current_cursor.x + tolerance || 
+        textfield->cursor.y >= current_cursor.y && 
+        textfield->cursor.index < current_cursor.index)
     {
-        struct Cursor current_cursor = textfield->cursor;
         textfield->cursor.index--;
         set_cursor_position(textfield, textfield->cursor.index);
+        tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
+    }
+    
+}
 
-        int tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
-        while(textfield->cursor.x > current_cursor.x + tolerance || 
-            textfield->cursor.y >= current_cursor.y && 
-            textfield->cursor.index < current_cursor.index)
+void key_press_up(struct TextField* textfield)
+{
+    if( textfield->cursor.y > textfield->base->y) //This will break if we added padding
+    {
+        if(  textfield->cursor_jump_direction == DOWN && textfield->cursor_jumps.size > 0  )
         {
-            textfield->cursor.index--;
+            struct Cursor* prev_cursor = stack_pop(&(textfield->cursor_jumps));
+            textfield->cursor = *prev_cursor;
+            free(prev_cursor);
             set_cursor_position(textfield, textfield->cursor.index);
-            tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
+        }
+        else
+        {
+            textfield->cursor_jump_direction = UP;
+            struct Cursor* prev_cursor = malloc(sizeof(struct Cursor));
+            *prev_cursor = textfield->cursor;
+            stack_push(&(textfield->cursor_jumps), prev_cursor);
+            move_cursor_up(textfield);
         }
         cursor_force_show(&(textfield->cursor));
     }
+
+
 }
 
 int get_character_width(struct TextField* textfield, char letter)
@@ -356,12 +378,12 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
         is_word_wrap_position(textfield, cursor->index+1))
     {
         cursor_to_start_of_line(textfield, cursor);
-        move_cursor_down(textfield, cursor);
+        move_cursor_down_a_line(textfield, cursor);
     }
     else if(cursor->x+char_width + CURSOR_WIDTH > textfield->base->x + textfield->base->width)
     {
         cursor_to_start_of_line(textfield, cursor);
-        move_cursor_down(textfield, cursor);
+        move_cursor_down_a_line(textfield, cursor);
         cursor->x += textfield->face->glyph->advance.x >> 6;
     }
     else
@@ -369,13 +391,8 @@ void add_letter_to_cursor(struct TextField* textfield, struct Cursor* cursor, ch
     cursor->index += 1; 
 }
 
-
-void key_press_down(struct TextField* textfield)
+void move_cursor_down(struct TextField* textfield)
 {
-
-    if(textfield->cursor.line >= textfield->last_line) // do nothing if on last line
-        return;
-
     struct Cursor current_cursor = textfield->cursor;
 
     int tolerance = get_character_width(textfield, get_char(textfield, current_cursor.index)) / 2;
@@ -401,20 +418,51 @@ void key_press_down(struct TextField* textfield)
     }
     textfield->cursor = current_cursor;
     cursor_force_show(&(textfield->cursor));
+}
+
+
+
+void key_press_down(struct TextField* textfield)
+{
+    if(textfield->cursor.line >= textfield->last_line) // do nothing if on last line
+        return;
+
+    if(  textfield->cursor_jump_direction == UP && textfield->cursor_jumps.size > 0  )
+    {
+        struct Cursor* prev_cursor = stack_pop(&(textfield->cursor_jumps));
+        textfield->cursor = *prev_cursor;
+        free(prev_cursor);
+        set_cursor_position(textfield, textfield->cursor.index);
+    }
+    else
+    {
+        textfield->cursor_jump_direction = DOWN;
+        struct Cursor* prev_cursor = malloc(sizeof(struct Cursor));
+        *prev_cursor = textfield->cursor;
+        stack_push(&(textfield->cursor_jumps), prev_cursor);
+        move_cursor_down(textfield);
+    }
+    cursor_force_show(&(textfield->cursor));
 
 }
 
 void key_press_return_key(struct TextField* textfield)
 {
     if( insert_char(textfield, '\n', textfield->cursor.index, 1) )
+    {
+        clear_cursor_jumps(textfield);
         set_cursor_position(textfield, ++textfield->cursor.index);
+    }
     cursor_force_show(&(textfield->cursor));
 }
 
 void key_press_backspace_key(struct TextField* textfield)
 {
     if( remove_char(textfield, textfield->cursor.index-1, 1) )
+    {
+        clear_cursor_jumps(textfield);
         set_cursor_position(textfield, --textfield->cursor.index);
+    }
     cursor_force_show(&(textfield->cursor));
 }
 
@@ -422,6 +470,8 @@ void shift_cursor_left(struct TextField* textfield)
 {
     if(textfield->cursor.index <= 0)
         return;
+
+    clear_cursor_jumps(textfield);
     set_cursor_position(textfield, textfield->cursor.index-1);
 }
 
@@ -436,6 +486,8 @@ void shift_cursor_right(struct TextField* textfield)
 {
     if(textfield->cursor.index > textfield->gb.size-1)
         return;
+
+    clear_cursor_jumps(textfield);
     add_letter_to_cursor(textfield, 
                                     &(textfield->cursor),
                                     get_char(textfield, textfield->cursor.index));
@@ -450,7 +502,10 @@ void key_press_right_key(struct TextField* textfield)
 void key_press_ascii_key(struct TextField* textfield, int sym)
 {
     if(insert_char(textfield, sym, textfield->cursor.index, 1))
+    {
+        clear_cursor_jumps(textfield);
         set_cursor_position(textfield, ++textfield->cursor.index);
+    }
     cursor_force_show(&(textfield->cursor));
 }
 
@@ -458,12 +513,14 @@ void undo(struct Widget* widget)
 {
     struct TextField* textfield = widget->child;
     history_undo(&(textfield->history)); 
+    clear_cursor_jumps(textfield);
 }
 
 void redo(struct Widget* widget)
 {
     struct TextField* textfield = widget->child;
     history_redo(&(textfield->history)); 
+    clear_cursor_jumps(textfield);
 }
 
 void handle_modifier_key_press(struct Widget* widget, uint32_t state, int modifier, int sym)
@@ -473,6 +530,17 @@ void handle_modifier_key_press(struct Widget* widget, uint32_t state, int modifi
     else if(modifier == L_CONTROL && sym == 'y')
          redo(widget);
     
+}
+
+static void clear_cursor_jumps(struct TextField* textfield)
+{
+    struct Stack* jumps = &(textfield->cursor_jumps);
+    while(jumps->size > 0)
+    {
+       int* pos = stack_pop(jumps); 
+       free(pos);
+    }
+
 }
 
 void key_press_textfield(struct Widget* widget, uint32_t state, int modifier, int sym)
@@ -560,6 +628,8 @@ void init_textfield(struct TextField* textfield,
     init_font(textfield, font);
     gb_gap_buffer_init(&(textfield->gb), max_length);
     history_init(&(textfield->history));
+    stack_init(&(textfield->cursor_jumps), MAX_LINES);
+    textfield->cursor_jump_direction = UNSET;
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor.index = textfield->gb.size;
 

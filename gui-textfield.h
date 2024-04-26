@@ -4,12 +4,21 @@
 #define MAX_FONT 64 
 #define LINE_SPACEING 0
 #define MAX_WRAPS 256
+#define MAX_LINES 128
 #include <stdint.h>
 #include "gap_buffer.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "cursor.h"
 #include "history.h"
+#include "stack.h"
+
+
+enum Direction {
+    DOWN = -1,
+    UP = 1,
+    UNSET = 0
+};
 
 struct TextField
 {
@@ -19,7 +28,6 @@ struct TextField
     
     struct Cursor cursor;
 
-//    long int last_blink;
     int font_height;
     int last_line;
 
@@ -32,6 +40,9 @@ struct TextField
     int total_wraps;
 
     struct History history;
+
+    struct Stack cursor_jumps;
+    enum Direction cursor_jump_direction;
 };
 
 
@@ -51,5 +62,5 @@ struct TextField* create_textfield(int x, int y, char font[], int width, int hei
 int insert_char(struct TextField* textfield, char new_char, int position,int save_history);
 int remove_char(struct TextField* textfield, int position, int save_history);
 void set_cursor_position(struct TextField* textfield, int index);
-
+static void clear_cursor_jumps(struct TextField* textfield);
 #endif 

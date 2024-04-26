@@ -4,3 +4,5 @@
 -lfreetype
 -Iinclude/gap_buffer
 -Iinclude/deque
+-Iinclude/stack
+
