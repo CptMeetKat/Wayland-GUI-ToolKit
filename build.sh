@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# Function to display usage information
+usage() {
+    echo "Usage: $0 [-c | -d | -b]"
+    echo "  -c: compile"
+    echo "  -d: debug and run"
+    echo "  -b: build and run"
+    exit 1
+}
+
+compile()
+{
+   cc -o client \
+      client.c \
+      ./include/xdg-shell-protocol.c \
+      ./include/widget/gui-widget.c \
+      ./include/gui-textfield/gui-textfield.c \
+      ./include/gui-textfield/cursor.c \
+      ./include/command/command.c \
+      ./include/gui-textfield/command_insert.c \
+      ./include/history/history.c \
+      ./include/gui-textfield/command_remove.c \
+      ./include/stack/stack.c \
+      ./include/deque/deque.c \
+      ./include/gap_buffer/gap_buffer.c \
+      -lwayland-client \
+      -lxkbcommon \
+      -Iinclude \
+      -lfreetype \
+      -Iinclude/gap_buffer \
+      -Iinclude/deque \
+      -Iinclude/stack \
+      -Iinclude/command \
+      -Iinclude/history \
+      -Iinclude/gui-textfield \
+      -Iinclude/widget 
+}
+
+run()
+{
+    if [ $? -eq 0 ]; then
+        ./client
+    fi
+}
+
+buildrun()
+{
+    compile;
+    run;
+}
+
+debugrun()
+{
+   cc -g -o client \
+      client.c \
+      ./include/xdg-shell-protocol.c \
+      ./include/widget/gui-widget.c \
+      ./include/gui-textfield/gui-textfield.c \
+      ./include/gui-textfield/cursor.c \
+      ./include/command/command.c \
+      ./include/gui-textfield/command_insert.c \
+      ./include/history/history.c \
+      ./include/gui-textfield/command_remove.c \
+      ./include/stack/stack.c \
+      ./include/deque/deque.c \
+      ./include/gap_buffer/gap_buffer.c \
+      -lwayland-client \
+      -lxkbcommon \
+      -Iinclude \
+      -lfreetype \
+      -Iinclude/gap_buffer \
+      -Iinclude/deque \
+      -Iinclude/stack \
+      -Iinclude/command \
+      -Iinclude/history \
+      -Iinclude/gui-textfield \
+      -Iinclude/widget 
+
+
+    if [ $? -eq 0 ]; then
+      valgrind --leak-check=full -s ./client
+    fi
+}
+
+# Check if no arguments provided, display usage
+if [ $# -eq 0 ]; then
+    buildrun
+fi
+
+# Parse command line options
+while getopts ":dcbh" opt; do
+    case ${opt} in
+        d)
+            echo "Debug and run..."
+            debugrun
+            ;;
+        c)
+            echo "Compiling..."
+            compile
+            ;;
+        b)
+            echo "Build and run"
+            buildrun
+            ;;
+        h)
+            usage
+            ;;
+        \?)
+            # If unknown option
+            echo "Invalid option: $OPTARG"
+            usage
+            ;;
+    esac
+done
+
