@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-cc -o client \
+cc -g -o client \
    client.c \
    ./include/xdg-shell-protocol.c \
    ./include/widget/gui-widget.c \
