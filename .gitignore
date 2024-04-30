@@ -3,3 +3,4 @@ client
 include/deque/a.out
 include/stack/a.out
 app
+app_demo

@@ -51,9 +51,43 @@ buildrun()
     run;
 }
 
+
+buildrun_demo()
+{
+   cc -o app_demo \
+      app_demo.c \
+      client.c \
+      ./include/xdg-shell-protocol.c \
+      ./include/widget/gui-widget.c \
+      ./include/gui-textfield/gui-textfield.c \
+      ./include/gui-textfield/cursor.c \
+      ./include/command/command.c \
+      ./include/gui-textfield/command_insert.c \
+      ./include/history/history.c \
+      ./include/gui-textfield/command_remove.c \
+      ./include/stack/stack.c \
+      ./include/deque/deque.c \
+      ./include/gap_buffer/gap_buffer.c \
+      -lwayland-client \
+      -lxkbcommon \
+      -Iinclude \
+      -lfreetype \
+      -Iinclude/gap_buffer \
+      -Iinclude/deque \
+      -Iinclude/stack \
+      -Iinclude/command \
+      -Iinclude/history \
+      -Iinclude/gui-textfield \
+      -Iinclude/widget 
+    
+   if [ $? -eq 0 ]; then
+        ./app_demo
+    fi
+}
+
 debugrun()
 {
-   cc -g -o build \
+   cc -g -o app \
       app.c \
       client.c \
       ./include/xdg-shell-protocol.c \
@@ -91,7 +125,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Parse command line options
-while getopts ":dcbh" opt; do
+while getopts ":dcbht" opt; do
     case ${opt} in
         d)
             echo "Debug and run..."
@@ -104,6 +138,9 @@ while getopts ":dcbh" opt; do
         b)
             echo "Build and run"
             buildrun
+            ;;
+        t)
+            buildrun_demo
             ;;
         h)
             usage
