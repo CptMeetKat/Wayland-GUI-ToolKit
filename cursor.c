@@ -1,5 +1,5 @@
 #include "cursor.h"
-#include "time.h"
+#include <time.h>
 
 void cursor_default(struct Cursor* cursor)
 {
