@@ -124,7 +124,7 @@ draw_frame(struct client_state *state)
     {
         for(int j = 0; j < height; j++)
         {
-            data[  (j * width) + i]   = 0x001A1B26;
+            data[  (j * width) + i]   = state->background_color;
         }
     }
 
@@ -673,7 +673,7 @@ void registerComponent(struct client_state *state, struct Widget* w)
     }
 }
 
-void init_surface(struct client_state* state, int width, int height)
+void init_surface(struct client_state* state, int width, int height, int background_color)
 {
     
     state->width = width;
@@ -687,6 +687,7 @@ void init_surface(struct client_state* state, int width, int height)
 
     state->modifier = -1;
 
+    state->background_color = background_color;
 
 
     state->wl_display = wl_display_connect(NULL);
