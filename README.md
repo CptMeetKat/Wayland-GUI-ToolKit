@@ -8,6 +8,7 @@ A demo framework for creating a Wayland GUI in C pixel by pixel
 
 ## Screenshots
 
+![Tiles of textboxes](images/demo-page1.png)
 
 #### Notes
 For educational purposes only, not intended for real world applications
