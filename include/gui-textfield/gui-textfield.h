@@ -43,6 +43,9 @@ struct TextField
 
     struct Stack cursor_jumps;
     enum Direction cursor_jump_direction;
+
+    int text_color;
+    int background_color;
 };
 
 
@@ -56,9 +59,11 @@ void init_default_textfield(struct TextField* textfield);
 void init_textfield(struct TextField* textfield, char* font, char* text, int text_length, int x, int y, int width, int height, int max_length,
                     void (*draw)(struct Widget*, uint32_t*, int, int),
                     void (*key_press)(struct Widget*, uint32_t state, int, int),
-                    void (*focus)(struct Widget*)
+                    void (*focus)(struct Widget*),
+                    int text_color,
+                    int background_color
                     );
-struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length);
+struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length, int text_color, int background_color);
 int insert_char(struct TextField* textfield, char new_char, int position,int save_history);
 int remove_char(struct TextField* textfield, int position, int save_history);
 void set_cursor_position(struct TextField* textfield, int index);

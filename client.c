@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200112L
 #define BUFFER_SIZE 128 //Need to make this dynamic
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -116,6 +117,16 @@ draw_frame(struct client_state *state)
             width, height, stride, WL_SHM_FORMAT_XRGB8888);
     wl_shm_pool_destroy(pool);
     close(fd);
+
+
+    
+    for(int i = 0; i < width; i++) //Set background colour
+    {
+        for(int j = 0; j < height; j++)
+        {
+            data[  (j * width) + i]   = 0x001A1B26;
+        }
+    }
 
 
     //make renderComponents() here:

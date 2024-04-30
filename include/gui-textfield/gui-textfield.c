@@ -109,7 +109,7 @@ static void draw_border(struct Widget* widget, uint32_t *data, int w_width, int 
 
 
 static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Face face, int xOffset,
-                       int yOffset, int w_width, int w_height)
+                       int yOffset, int w_width, int w_height, int text_color, int background_color)
 {
     if(letter == '\n') //Cases not to render
         return 0;
@@ -129,9 +129,9 @@ static int draw_letter(char letter, uint32_t* data, struct Widget* widget, FT_Fa
                 continue;
 
             if(face->glyph->bitmap.buffer[y * face->glyph->bitmap.width + x] >= 128)
-                data[((y+yOffset + base_line_offset )*w_width)+x+xOffset] = 0xFFFFFFFF; //white
+                data[((y+yOffset + base_line_offset )*w_width)+x+xOffset] = text_color; //white
             else
-                data[((y+yOffset + base_line_offset)*w_width)+x+xOffset] = 0x00000000; //Transparent
+                data[((y+yOffset + base_line_offset)*w_width)+x+xOffset] = background_color; //Transparent
         }
     }
     
@@ -240,7 +240,7 @@ void draw_text(struct Widget* widget, uint32_t *data, int w_width, int w_height)
             xOffset = widget->x;
             lines++;
         }
-        xOffset += draw_letter(letter, data, widget, t->face, xOffset, yOffset, w_width, w_height);
+        xOffset += draw_letter(letter, data, widget, t->face, xOffset, yOffset, w_width, w_height, t->text_color, t->background_color);
     }
     t->font_height = t->face->size->metrics.height >> 6;
     t->last_line = lines;
@@ -621,7 +621,9 @@ void init_textfield(struct TextField* textfield,
                     int max_length,
                     void (*draw)(struct Widget*, uint32_t*, int, int),
                     void (*key_press)(struct Widget*, uint32_t state, int, int),
-                    void (*focus)(struct Widget*)
+                    void (*focus)(struct Widget*),
+                    int text_color,
+                    int background_color
                     )
 {
     init_default_textfield(textfield);
@@ -632,6 +634,8 @@ void init_textfield(struct TextField* textfield,
     textfield->cursor_jump_direction = UNSET;
     gb_set_text( &(textfield->gb), text, text_length);
     textfield->cursor.index = textfield->gb.size;
+    textfield->text_color = text_color;
+    textfield->background_color = background_color;
 
     textfield->base = (struct Widget*)malloc(sizeof(struct Widget));
     if (textfield->base == NULL) {
@@ -654,13 +658,13 @@ void init_textfield(struct TextField* textfield,
 }
 
 
-struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length) {
+struct TextField* create_textfield(int x, int y, char font[], int width, int height, char text[], int max_length, int text_color, int background_color) {
     struct TextField* textField = (struct TextField*)malloc(sizeof(struct TextField));
     if (textField == NULL) {
         perror("Memory allocation failed");
         return NULL;
     }
-    init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length, draw_textfield, key_press_textfield, focus_textfield);
+    init_textfield(textField, font, text, strlen(text), x, y, width, height, max_length, draw_textfield, key_press_textfield, focus_textfield, text_color, background_color);
     return textField;
 }
 

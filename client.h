@@ -4,6 +4,8 @@
 
 #define MAX_COMPONENTS 32
 #define BUFFER_SIZE 128 //Need to make this dynamic
+#define BACKGROUND_COLOR 0x001A1B26
+#define TEXT_COLOR 0xFFFFFFFF
 /* Wayland code */
 #include <stdbool.h>
 #include <stdint.h>
