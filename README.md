@@ -1,5 +1,6 @@
 # Wayland GUI Toolkit
-A demo framework for creating a Wayland GUI in C pixel by pixel
+A demo framework for creating a Wayland GUI in C pixel by pixel.
+- This would equivalent to a very junior GTK+
 
 ## Pre-requisites
 - Linux Distribution with WayLand > 1.2
