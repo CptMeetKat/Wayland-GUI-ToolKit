@@ -599,7 +599,7 @@ void init_font(struct TextField* textfield, char* font)
 {
     if(strlen(font) >= MAX_FONT)
     {
-        printf("Error: Font filename too long");
+        perror("Error: Font filename too long");
         exit(1);
     }
     strncpy(textfield->font, font, MAX_FONT-1);
