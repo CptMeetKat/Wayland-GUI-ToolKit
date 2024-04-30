@@ -5,4 +5,8 @@
 -Iinclude/gap_buffer
 -Iinclude/deque
 -Iinclude/stack
+-Iinclude/command
+-Iinclude/history
+-Iinclude/gui-textfield
+-Iinclude/widget 
 
