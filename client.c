@@ -1,6 +1,5 @@
 #define _POSIX_C_SOURCE 200112L
 #define BUFFER_SIZE 128 //Need to make this dynamic
-#define MAX_COMPONENTS 32
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -9,12 +8,11 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
-#include <wayland-client.h>
 #include <stdio.h>
 #include "xdg-shell-client-protocol.h"
 #include <xkbcommon/xkbcommon.h>
 #include "gui-widget.h"
-#include "gui-textfield.h"
+#include "client.h"
 
 enum pointer_event_mask {
        POINTER_EVENT_ENTER = 1 << 0,
@@ -26,21 +24,6 @@ enum pointer_event_mask {
        POINTER_EVENT_AXIS_STOP = 1 << 6,
        POINTER_EVENT_AXIS_DISCRETE = 1 << 7,
 };
-
-struct pointer_event {
-       uint32_t event_mask;
-       wl_fixed_t surface_x, surface_y;
-       uint32_t button, state;
-       uint32_t time;
-       uint32_t serial;
-       struct {
-               bool valid;
-               wl_fixed_t value;
-               int32_t discrete;
-       } axes[2];
-       uint32_t axis_source;
-};
-
 
 
 /* Shared memory support code */
@@ -90,47 +73,6 @@ allocate_shm_file(size_t size)
     return fd;
 }
 
-/* Wayland code */
-struct client_state {
-    /* Globals */
-    struct wl_display *wl_display;
-    struct wl_registry *wl_registry;
-    struct wl_shm *wl_shm;
-    struct wl_compositor *wl_compositor;
-    struct xdg_wm_base *xdg_wm_base;
-    struct wl_seat *wl_seat;
-    /* Objects */
-    struct wl_surface *wl_surface;
-    struct xdg_surface *xdg_surface;
-    struct xdg_toplevel *xdg_toplevel;
-    struct wl_keyboard *wl_keyboard;
-    struct wl_pointer *wl_pointer;
-    struct wl_touch *wl_touch;
-    float offset;
-    uint32_t last_frame;
-    int width, height;
-    bool closed;
-    struct pointer_event pointer_event;
-    struct xkb_state *xkb_state;
-    struct xkb_context *xkb_context;
-    struct xkb_keymap *xkb_keymap;
-
-    //components
-    struct Widget *components[MAX_COMPONENTS];
-    int total_components;
-
-    struct Widget* focused;
-    int focused_index;
-
-    int rate;
-    int delay;
-
-    int last_key_action;
-    int last_key_time;
-    int last_key;
-
-    int modifier;
-};
 
 
 static void handle_key_input(struct client_state* state, int sym_code, enum wl_keyboard_key_state key_state);
@@ -701,7 +643,7 @@ static const struct wl_registry_listener wl_registry_listener = {
     .global_remove = registry_global_remove,
 };
 
-static void registerComponent(struct client_state *state, struct Widget* w)
+void registerComponent(struct client_state *state, struct Widget* w)
 {
     if(state->total_components >= MAX_COMPONENTS)
     {
@@ -755,24 +697,24 @@ void init_surface(struct client_state* state, int width, int height)
     wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
 }
 
-int main(int argc, char *argv[])
-{
-    struct client_state state = { 0 };
-    init_surface(&state, 640, 480);
-
-    registerComponent(&state, create_textfield(10, 10,"./fonts/DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(350, 80, "DejaVuSerif.ttf", 200, 220, "", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
-    //registerComponent(&state, create_textfield(400, 220, "DejaVuSerif.ttf", 2, 100, "aW", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
-//    registerComponent(&state, create_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
-
-    while (wl_display_dispatch(state.wl_display)) {
-        /* This space deliberately left blank */
-    }
-
-    return 0;
-}
+//int main(int argc, char *argv[])
+//{
+//    struct client_state state = { 0 };
+//    init_surface(&state, 640, 480);
+//
+//    registerComponent(&state, create_textfield(10, 10,"./fonts/DejaVuSansMono.ttf", 600, 400, "This is what you should do\nFollow\nthe white\nrabbit..............", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(50, 80, "DejaVuSerif.ttf", 200, 220, "HeyZukoHere", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(350, 80, "DejaVuSerif.ttf", 200, 220, "", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(400, 10, "DejaVuSerif.ttf", 26, 200, "aW", BUFFER_SIZE)->base);
+//    //registerComponent(&state, create_textfield(400, 220, "DejaVuSerif.ttf", 2, 100, "aW", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(10, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(450, 300, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(450, -100, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+////    registerComponent(&state, create_textfield(-100, 450, "DejaVuSerif.ttf", 300, 200, "aW", BUFFER_SIZE)->base);
+//
+//    while (wl_display_dispatch(state.wl_display)) {
+//        /* This space deliberately left blank */
+//    }
+//
+//    return 0;
+//}

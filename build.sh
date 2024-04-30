@@ -11,7 +11,8 @@ usage() {
 
 compile()
 {
-   cc -o client \
+   cc -o app \
+      app.c \
       client.c \
       ./include/xdg-shell-protocol.c \
       ./include/widget/gui-widget.c \
@@ -40,7 +41,7 @@ compile()
 run()
 {
     if [ $? -eq 0 ]; then
-        ./client
+        ./app
     fi
 }
 
@@ -52,7 +53,8 @@ buildrun()
 
 debugrun()
 {
-   cc -g -o client \
+   cc -g -o build \
+      app.c \
       client.c \
       ./include/xdg-shell-protocol.c \
       ./include/widget/gui-widget.c \
@@ -79,7 +81,7 @@ debugrun()
 
 
     if [ $? -eq 0 ]; then
-      valgrind --leak-check=full -s ./client
+      valgrind --leak-check=full -s ./app
     fi
 }
 
