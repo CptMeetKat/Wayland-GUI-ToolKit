@@ -7,7 +7,7 @@ A demo framework for creating a Wayland GUI in C pixel by pixel
 
 ## To Run Demo
 1. Clone repository
-2. Build demo file with `./build -t`
+2. Build & Run demo file with `./build -t`
 3. See [app_demo.c](app_demo.c) for how each component is used
 
 ## Screenshots
